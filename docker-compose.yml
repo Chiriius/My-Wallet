@@ -1,0 +1,33 @@
+
+services:
+  mywalletapi:
+    image: mywalletusers:1.0
+    container_name: mywalletusers
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 8080:8080
+    networks:
+      - mywallet
+
+  dbmywallet:
+    image: mongo:noble
+    container_name: mywalletdb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: 12345678
+      MONGO_INITDB_DATABASE: mywallet
+    ports:
+      - 27017:27017
+    volumes:
+      - db_data:/data/db
+    networks:
+      - mywallet
+
+volumes:
+  db_data:
+
+networks:
+  mywallet:
+    driver: bridge
