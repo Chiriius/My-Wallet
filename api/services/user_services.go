@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"my_wallet/api/entities"
 	repository_user "my_wallet/api/respository/user"
 
@@ -13,12 +14,14 @@ type UserService interface {
 }
 
 type userService struct {
-	repository repository_user.MongoUserRepositoy
+	ctx        context.Context
+	repository repository_user.UserRepository
 	logger     logrus.FieldLogger
 }
 
-func NewUserService(repo repository_user.MongoUserRepositoy, logger logrus.FieldLogger) *userService {
+func NewUserService(repo repository_user.UserRepository, logger logrus.FieldLogger, ctx context.Context) *userService {
 	return &userService{
+		ctx:        ctx,
 		repository: repo,
 		logger:     logger,
 	}
@@ -26,6 +29,6 @@ func NewUserService(repo repository_user.MongoUserRepositoy, logger logrus.Field
 
 func (s *userService) CreateUser(user entities.User) (entities.User, error) {
 	user.UID = uuid.NewString()
-	return s.repository.CreateUser(user)
+	return s.repository.CreateUser(user, s.ctx)
 
 }
