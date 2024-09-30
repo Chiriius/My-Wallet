@@ -24,13 +24,24 @@ type CreateUserResponse struct {
 	Err string `json:"error,omitempty"`
 }
 
+type GetUserRequest struct {
+	ID string
+}
+
+type GetUserResponse struct {
+	User entities.User
+	Err  string `json:"error,omitempty"`
+}
+
 type Endpoints struct {
 	CreateUser endpoint.Endpoint
+	GetUser    endpoint.Endpoint
 }
 
 func MakeServerEndpoints(s services.UserService, logger logrus.FieldLogger) Endpoints {
 	return Endpoints{
 		CreateUser: MakeCreateUserEndpoint(s, logger),
+		GetUser:    MakeGetUserEdpoint(s, logger),
 	}
 }
 
@@ -40,7 +51,7 @@ func MakeCreateUserEndpoint(s services.UserService, logger logrus.FieldLogger) e
 		var ok bool = false
 		if req, ok = request.(CreateUserRequest); !ok {
 			logger.Errorln("Layer:user_endpoint", "Method:MakeCreateUserEndpoint", "Error: Interface type wrong")
-			return nil, errors.New("Interface type wrong")
+			return nil, errors.ErrUnsupported // aqui va el error personalizado de interfaz equivocada
 		}
 		user := entities.User{
 			DNI:      req.DNI,
@@ -59,4 +70,25 @@ func MakeCreateUserEndpoint(s services.UserService, logger logrus.FieldLogger) e
 		return CreateUserResponse{ID: serviceUser.ID}, nil
 
 	}
+}
+
+func MakeGetUserEdpoint(s services.UserService, logger logrus.FieldLogger) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		var req GetUserRequest
+		var ok bool = false
+
+		if req, ok = request.(GetUserRequest); !ok {
+			return nil, errors.ErrUnsupported // aqui va el error personalizado de interfaz equivocada
+		}
+
+		user, err := s.GetUSer(req.ID)
+
+		if err != nil {
+			return GetUserResponse{}, err
+		}
+
+		return GetUserResponse{User: user}, nil
+
+	}
+
 }

@@ -5,12 +5,15 @@ import (
 	"my_wallet/api/entities"
 
 	"github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type UserRepository interface {
 	CreateUser(user entities.User, ctx context.Context) (entities.User, error)
+	GetUser(id string, ctx context.Context) (entities.User, error)
 }
 
 type MongoUserRepositoy struct {
@@ -36,4 +39,30 @@ func (repo *MongoUserRepositoy) CreateUser(user entities.User, ctx context.Conte
 	}
 	repo.logger.Infoln("Layer:user_repository", "Method:CreateUser", "User:", user)
 	return user, err
+}
+
+func (repo *MongoUserRepositoy) GetUser(id string, ctx context.Context) (entities.User, error) {
+	var user entities.User
+	repo.logger.Infoln("Id:", id)
+
+	idd, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return user, err
+	}
+
+	filter := bson.D{{"_id", idd}}
+	opts := options.FindOne()
+
+	coll := repo.db.Database("mywallet").Collection("users")
+
+	err = coll.FindOne(ctx, filter, opts).Decode(&user)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+
+			return user, err
+		}
+		return user, err
+	}
+
+	return user, nil
 }

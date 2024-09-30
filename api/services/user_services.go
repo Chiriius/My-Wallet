@@ -11,6 +11,7 @@ import (
 
 type UserService interface {
 	CreateUser(use entities.User) (entities.User, error)
+	GetUSer(id string) (entities.User, error)
 }
 
 type userService struct {
@@ -34,7 +35,11 @@ func (s *userService) CreateUser(user entities.User) (entities.User, error) {
 	if err := s.validate.Struct(user); err != nil {
 		return entities.User{}, err
 	}
-
 	return s.repository.CreateUser(user, s.ctx)
 
+}
+
+func (s *userService) GetUSer(id string) (entities.User, error) {
+
+	return s.repository.GetUser(id, s.ctx)
 }

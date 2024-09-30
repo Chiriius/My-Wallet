@@ -16,12 +16,17 @@ func NewHTTPHandler(endpoints endpoints.Endpoints, logger logrus.FieldLogger) ht
 	m.Handle("/user", httpTransport.NewServer(
 		endpoints.CreateUser,
 		decodeCreateUserRequest,
-		encodeCreateUserResponse,
+		encodeGenericResponse,
+	))
+	m.Handle("/user/get", httpTransport.NewServer(
+		endpoints.GetUser,
+		decodeGetUserRequest,
+		encodeGenericResponse,
 	))
 	return m
 }
 
-func encodeCreateUserResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
+func encodeGenericResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
 
 	logrus.Infoln("User with Http:", response)
 	return json.NewEncoder(w).Encode(response)
@@ -31,4 +36,14 @@ func decodeCreateUserRequest(_ context.Context, r *http.Request) (interface{}, e
 	var req endpoints.CreateUserRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	return req, err
+}
+
+func decodeGetUserRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	var req endpoints.GetUserRequest
+	if err := r.ParseForm(); err != nil {
+		return nil, err
+	}
+	req.ID = r.FormValue("id")
+
+	return req, nil
 }

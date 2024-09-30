@@ -40,12 +40,12 @@ func New(logger logrus.FieldLogger, httpAddr, dburl string, ctx context.Context)
 }
 
 func (s *Server) Start() error {
-	go func() {
-		logrus.Infoln("Layel:Server ", " Method: Start", "Port:", s.httpAddr)
-		if err := http.ListenAndServe(s.httpAddr, s.httpMux); err != nil {
-			logrus.Fatalf("HTTP server failed: %v", err)
-		}
-	}()
+
+	logrus.Infoln("Layel:Server ", " Method: Start", "Port:", s.httpAddr)
+	if err := http.ListenAndServe(s.httpAddr, s.httpMux); err != nil {
+		logrus.Fatalf("HTTP server failed: %v", err)
+	}
+
 	return nil
 }
 
