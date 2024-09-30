@@ -48,9 +48,6 @@ func main() {
 		logger.Panic("Failed to create server:", err)
 	}
 
-	if err := srv.Start(); err != nil {
-		logger.Error("Failed to start server:", err)
-	}
+	srv.Start()
 
-	select {}
 }
