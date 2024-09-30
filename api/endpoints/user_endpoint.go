@@ -20,7 +20,7 @@ type CreateUserRequest struct {
 }
 
 type CreateUserResponse struct {
-	DNI int    `json:"id,omitempty"`
+	ID  string `json:"id,omitempty"`
 	Err string `json:"error,omitempty"`
 }
 
@@ -55,8 +55,8 @@ func MakeCreateUserEndpoint(s services.UserService, logger logrus.FieldLogger) e
 			logger.Errorln("Layer:user_endpoint", "Method:MakeCreateUserEndpoint", err)
 			return CreateUserResponse{}, err
 		}
-		logger.Infoln("Layer:user_endpoint", "Method:MakeCreateUserEndpoint", "Response:", CreateUserResponse{DNI: serviceUser.DNI})
-		return CreateUserResponse{DNI: serviceUser.DNI}, nil
+		logger.Infoln("Layer:user_endpoint", "Method:MakeCreateUserEndpoint", "Response:", CreateUserResponse{ID: serviceUser.ID})
+		return CreateUserResponse{ID: serviceUser.ID}, nil
 
 	}
 }

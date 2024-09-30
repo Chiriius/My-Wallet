@@ -27,7 +27,7 @@ func New(logger logrus.FieldLogger, httpAddr, dburl string, ctx context.Context)
 	userRepository := repository_user.NewMongoUserREpository(db, logger)
 	userService := services.NewUserService(userRepository, logger, ctx)
 	userEnpoints := endpoints.MakeServerEndpoints(userService, logger)
-	httpHandler := transports.NewHTTPHandler(userEnpoints)
+	httpHandler := transports.NewHTTPHandler(userEnpoints, logger)
 
 	httpMux := http.NewServeMux()
 	httpMux.Handle("/", httpHandler)

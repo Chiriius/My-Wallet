@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func NewHTTPHandler(endpoints endpoints.Endpoints) http.Handler {
+func NewHTTPHandler(endpoints endpoints.Endpoints, logger logrus.FieldLogger) http.Handler {
 
 	m := http.NewServeMux()
 	m.Handle("/user", httpTransport.NewServer(
@@ -22,6 +22,7 @@ func NewHTTPHandler(endpoints endpoints.Endpoints) http.Handler {
 }
 
 func encodeCreateUserResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
+
 	logrus.Infoln("User with Http:", response)
 	return json.NewEncoder(w).Encode(response)
 }

@@ -5,7 +5,7 @@ import (
 	"my_wallet/api/entities"
 	repository_user "my_wallet/api/respository/user"
 
-	"github.com/google/uuid"
+	"github.com/go-playground/validator/v10"
 	"github.com/sirupsen/logrus"
 )
 
@@ -17,6 +17,7 @@ type userService struct {
 	ctx        context.Context
 	repository repository_user.UserRepository
 	logger     logrus.FieldLogger
+	validate   *validator.Validate
 }
 
 func NewUserService(repo repository_user.UserRepository, logger logrus.FieldLogger, ctx context.Context) *userService {
@@ -24,11 +25,16 @@ func NewUserService(repo repository_user.UserRepository, logger logrus.FieldLogg
 		ctx:        ctx,
 		repository: repo,
 		logger:     logger,
+		validate:   validator.New(),
 	}
 }
 
 func (s *userService) CreateUser(user entities.User) (entities.User, error) {
-	user.UID = uuid.NewString()
+
+	if err := s.validate.Struct(user); err != nil {
+		return entities.User{}, err
+	}
+
 	return s.repository.CreateUser(user, s.ctx)
 
 }
