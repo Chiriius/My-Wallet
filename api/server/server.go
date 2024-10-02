@@ -27,7 +27,7 @@ func New(logger logrus.FieldLogger, httpAddr, dburl string, ctx context.Context)
 	userRepository := repository_user.NewMongoUserREpository(db, logger)
 	userService := services.NewUserService(userRepository, logger, ctx)
 	userEnpoints := endpoints.MakeServerEndpoints(userService, logger)
-	httpHandler := transports.NewHTTPHandler(userEnpoints)
+	httpHandler := transports.NewHTTPHandler(userEnpoints, logger)
 
 	httpMux := http.NewServeMux()
 	httpMux.Handle("/", httpHandler)
@@ -40,12 +40,12 @@ func New(logger logrus.FieldLogger, httpAddr, dburl string, ctx context.Context)
 }
 
 func (s *Server) Start() error {
-	go func() {
-		logrus.Infoln("Layel:Server ", " Method: Start", "Port:", s.httpAddr)
-		if err := http.ListenAndServe(s.httpAddr, s.httpMux); err != nil {
-			logrus.Fatalf("HTTP server failed: %v", err)
-		}
-	}()
+
+	logrus.Infoln("Layel:Server ", " Method: Start", "Port:", s.httpAddr)
+	if err := http.ListenAndServe(s.httpAddr, s.httpMux); err != nil {
+		logrus.Fatalf("HTTP server failed: %v", err)
+	}
+
 	return nil
 }
 

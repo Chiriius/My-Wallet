@@ -1,11 +1,12 @@
 package entities
 
 type User struct {
-	UID      string
-	DNI      int
-	Name     string
-	Email    string
-	Password string
-	Address  string
-	Phone    int
+	ID       string `json:"id,omitempty" bson:"id,omitempty"`
+	DNI      int    `validate:"required"`
+	Name     string `validate:"required"`
+	Email    string `validate:"required,email"`
+	Password string `validate:"required"`
+	Address  string `validate:"required"`
+	Phone    int    `validate:"required"`
+	State    bool   `validate:"required"`
 }
