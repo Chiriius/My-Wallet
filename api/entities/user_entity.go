@@ -8,4 +8,5 @@ type User struct {
 	Password string `validate:"required"`
 	Address  string `validate:"required"`
 	Phone    int    `validate:"required"`
+	State    bool   `validate:"required"`
 }
