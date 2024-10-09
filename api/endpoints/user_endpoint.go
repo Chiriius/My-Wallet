@@ -74,7 +74,7 @@ type Endpoints struct {
 func MakeServerEndpoints(s services.UserService, logger logrus.FieldLogger) Endpoints {
 	return Endpoints{
 		CreateUser:     MakeCreateUserEndpoint(s, logger),
-		GetUser:        MakeGetUserEdpoint(s, logger),
+		GetUser:        MakeGetUserEndpoint(s, logger),
 		DeleteUser:     MakeDeleteUserEndpoint(s, logger),
 		UpdateUser:     MakeUpdateUserEndpoint(s, logger),
 		SoftDeleteUser: MakeSoftDeleteUserEndpoint(s, logger),
@@ -90,15 +90,15 @@ func MakeCreateUserEndpoint(s services.UserService, logger logrus.FieldLogger) e
 			return nil, errors.ErrUnsupported // aqui va el error personalizado de interfaz equivocada
 		}
 		user := entities.User{
-			DNI:      req.DNI,
-			Name:     req.Name,
-			Email:    req.Email,
-			Password: req.Password,
-			Address:  req.Address,
-			Phone:    req.Phone,
-			State:    true,
+			DNI:         req.DNI,
+			Name:        req.Name,
+			Email:       req.Email,
+			Password:    req.Password,
+			Address:     req.Address,
+			Phone:       req.Phone,
+			StateActive: true,
 		}
-		serviceUser, err := s.CreateUser(user)
+		serviceUser, err := s.CreateUser(ctx, user)
 		if err != nil {
 			logger.Errorln("Layer:user_endpoint", "Method:MakeCreateUserEndpoint", err)
 			return CreateUserResponse{}, err
@@ -109,7 +109,7 @@ func MakeCreateUserEndpoint(s services.UserService, logger logrus.FieldLogger) e
 	}
 }
 
-func MakeGetUserEdpoint(s services.UserService, logger logrus.FieldLogger) endpoint.Endpoint {
+func MakeGetUserEndpoint(s services.UserService, logger logrus.FieldLogger) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 		var req GetUserRequest
 		var ok bool = false
@@ -118,7 +118,7 @@ func MakeGetUserEdpoint(s services.UserService, logger logrus.FieldLogger) endpo
 			return nil, errors.ErrUnsupported // aqui va el error personalizado de interfaz equivocada
 		}
 
-		user, err := s.GetUSer(req.ID)
+		user, err := s.GetUSer(ctx, req.ID)
 
 		if err != nil {
 			return GetUserResponse{}, err
@@ -145,17 +145,17 @@ func MakeUpdateUserEndpoint(s services.UserService, logger logrus.FieldLogger) e
 		}
 
 		user := entities.User{
-			ID:       req.ID,
-			DNI:      req.DNI,
-			Email:    req.Email,
-			Name:     req.Name,
-			Password: req.Password,
-			Address:  req.Address,
-			Phone:    req.Phone,
-			State:    true,
+			ID:          req.ID,
+			DNI:         req.DNI,
+			Email:       req.Email,
+			Name:        req.Name,
+			Password:    req.Password,
+			Address:     req.Address,
+			Phone:       req.Phone,
+			StateActive: true,
 		}
 
-		serviceUser, err := s.UpdateUser(user)
+		serviceUser, err := s.UpdateUser(ctx, user)
 		if err != nil {
 			logger.Errorln("Layer: user_endpoint", "Method: MakeUpdateUserEndpoint", "Error:", err)
 			return UpdateUserREsponse{}, err
@@ -174,7 +174,7 @@ func MakeSoftDeleteUserEndpoint(s services.UserService, logger logrus.FieldLogge
 			return nil, errors.New("")
 		}
 
-		erro := s.SoftDeleteUser(req.ID)
+		erro := s.SoftDeleteUser(ctx, req.ID)
 		if err != nil {
 			return DeleteUserResponse{}, err
 		}
@@ -191,7 +191,7 @@ func MakeDeleteUserEndpoint(s services.UserService, logger logrus.FieldLogger) e
 		if req, ok = request.(DeleteUserRequest); !ok {
 			return nil, errors.New("ss")
 		}
-		erro := s.DeleteUser(req.ID)
+		erro := s.DeleteUser(ctx, req.ID)
 		if err != nil {
 			return DeleteUserResponse{}, err
 		}

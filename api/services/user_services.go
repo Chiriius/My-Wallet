@@ -13,11 +13,11 @@ import (
 )
 
 type UserService interface {
-	CreateUser(use entities.User) (entities.User, error)
-	GetUSer(id string) (entities.User, error)
-	DeleteUser(id string) error
-	SoftDeleteUser(id string) error
-	UpdateUser(user entities.User) (entities.User, error)
+	CreateUser(ctx context.Context, use entities.User) (entities.User, error)
+	GetUSer(ctx context.Context, id string) (entities.User, error)
+	DeleteUser(ctx context.Context, id string) error
+	SoftDeleteUser(ctx context.Context, id string) error
+	UpdateUser(ctx context.Context, user entities.User) (entities.User, error)
 }
 
 type userService struct {
@@ -36,7 +36,7 @@ func NewUserService(repo repository_user.UserRepository, logger logrus.FieldLogg
 	}
 }
 
-func (s *userService) CreateUser(user entities.User) (entities.User, error) {
+func (s *userService) CreateUser(ctx context.Context, user entities.User) (entities.User, error) {
 
 	if err := s.validate.Struct(user); err != nil {
 		s.logger.Errorln("Layer: user_services", "Method: CreateUser", "Error:", err)
@@ -58,29 +58,44 @@ func (s *userService) CreateUser(user entities.User) (entities.User, error) {
 		return entities.User{}, errors.New("the name field must not contain special characters")
 	}
 
-	return s.repository.CreateUser(user, s.ctx)
+	return s.repository.CreateUser(user, ctx)
 
 }
 
-func (s *userService) GetUSer(id string) (entities.User, error) {
+func (s *userService) GetUSer(ctx context.Context, id string) (entities.User, error) {
 
-	return s.repository.GetUser(id, s.ctx)
+	return s.repository.GetUser(id, ctx)
 }
 
-func (s *userService) UpdateUser(user entities.User) (entities.User, error) {
+func (s *userService) UpdateUser(ctx context.Context, user entities.User) (entities.User, error) {
+	if err := s.validate.Struct(user); err != nil {
+		s.logger.Errorln("Layer: user_services", "Method: UpdateUser", "Error:", err)
+		return entities.User{}, err
+	}
+	phoneStr := fmt.Sprintf("%d", user.Phone)
+	if len(user.Password) < 8 {
+		s.logger.Errorln("Layer: user_services", "Method: UpdateUser", "Error: minimum password length 8")
+		return entities.User{}, errors.New("Minimum password length 8 ")
+
+	}
+	if len(phoneStr) != 10 {
+		s.logger.Errorln("Layer: user_services", "Method: UpdateUser", "Error: Phone length 10")
+		return entities.User{}, errors.New("Phone length 10")
+
+	}
 	re := regexp.MustCompile(`^[a-zA-Z\s]+$`)
 	if !re.MatchString(user.Name) {
 		return entities.User{}, errors.New("the name field must not contain special characters")
 	}
 
-	return s.repository.UpdateUser(user, s.ctx)
+	return s.repository.UpdateUser(user, ctx)
 }
 
-func (s *userService) SoftDeleteUser(id string) error {
-	return s.repository.SoftDeleteUser(id, s.ctx)
+func (s *userService) SoftDeleteUser(ctx context.Context, id string) error {
+	return s.repository.SoftDeleteUser(id, ctx)
 }
 
-func (s *userService) DeleteUser(id string) error {
+func (s *userService) DeleteUser(ctx context.Context, id string) error {
 
-	return s.repository.DeleteUser(id, s.ctx)
+	return s.repository.DeleteUser(id, ctx)
 }
