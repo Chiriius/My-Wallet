@@ -22,9 +22,9 @@ COPY --from=builder /go/src/app/.env /app/.env
 COPY wait-for-it.sh /usr/local/bin/  
 RUN chmod +x /usr/local/bin/wait-for-it.sh  # Asegúrate de que sea ejecutable
 
-RUN echo "probando"
+RUN echo "test"
 RUN cat /app/.env
-RUN echo "termine"
+RUN echo "finish"
 
 RUN chmod 777 /app/.env
 RUN chmod +x /app/app

@@ -42,6 +42,7 @@ func NewHTTPHandler(endpoints endpoints.Endpoints, logger logrus.FieldLogger) ht
 }
 
 func encodeCreateUserResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {
+
 	w.WriteHeader(http.StatusCreated)
 	return json.NewEncoder(w).Encode(response)
 }
