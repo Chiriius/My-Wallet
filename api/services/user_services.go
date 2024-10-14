@@ -45,12 +45,13 @@ func (s *userService) CreateUser(ctx context.Context, user entities.User) (entit
 	phoneStr := fmt.Sprintf("%d", user.Phone)
 	if len(user.Password) < 8 {
 		s.logger.Errorln("Layer: user_services", "Method: CreateUser", "Error: minimum password length 8")
-		return entities.User{}, errors.New("minimum password length 8 and phone length 10")
+		return entities.User{}, errors.New("minimum password length 8 ")
+
 
 	}
 	if len(phoneStr) != 10 {
 		s.logger.Errorln("Layer: user_services", "Method: CreateUser", "Error: Phone length 10")
-		return entities.User{}, errors.New("minimum password length 8 and phone length 10")
+		return entities.User{}, errors.New("phone length 10")
 
 	}
 	re := regexp.MustCompile(`^[a-zA-Z\s]+$`)
