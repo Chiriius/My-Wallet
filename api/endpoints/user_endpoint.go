@@ -87,7 +87,7 @@ func MakeCreateUserEndpoint(s services.UserService, logger logrus.FieldLogger) e
 		var ok bool = false
 		if req, ok = request.(CreateUserRequest); !ok {
 			logger.Errorln("Layer:user_endpoint", "Method:MakeCreateUserEndpoint", "Error: Interface type wrong")
-			return nil, errors.ErrUnsupported // aqui va el error personalizado de interfaz equivocada
+			return CreateUserResponse{}, errors.ErrUnsupported // aqui va el error personalizado de interfaz equivocada
 		}
 		user := entities.User{
 			DNI:         req.DNI,
@@ -101,7 +101,7 @@ func MakeCreateUserEndpoint(s services.UserService, logger logrus.FieldLogger) e
 		serviceUser, err := s.CreateUser(ctx, user)
 		if err != nil {
 			logger.Errorln("Layer:user_endpoint", "Method:MakeCreateUserEndpoint", err)
-			return CreateUserResponse{}, err
+			return CreateUserResponse{}, errors.New("Error: Using service in the endpoint")
 		}
 		logger.Infoln("Layer:user_endpoint", "Method:MakeCreateUserEndpoint", "Response:", CreateUserResponse{ID: serviceUser.ID})
 		return CreateUserResponse{ID: serviceUser.ID}, nil
@@ -115,13 +115,13 @@ func MakeGetUserEndpoint(s services.UserService, logger logrus.FieldLogger) endp
 		var ok bool = false
 
 		if req, ok = request.(GetUserRequest); !ok {
-			return nil, errors.ErrUnsupported // aqui va el error personalizado de interfaz equivocada
+			return GetUserResponse{}, errors.ErrUnsupported // aqui va el error personalizado de interfaz equivocada
 		}
 
 		user, err := s.GetUSer(ctx, req.ID)
 
 		if err != nil {
-			return GetUserResponse{}, err
+			return GetUserResponse{}, errors.New("Error: Using service in the endpoint")
 		}
 
 		return GetUserResponse{User: user}, nil
@@ -136,12 +136,7 @@ func MakeUpdateUserEndpoint(s services.UserService, logger logrus.FieldLogger) e
 		var ok bool = false
 
 		if req, ok = request.(UpdateUserRequest); !ok {
-			return nil, errors.ErrUnsupported // aqui va el error personalizado de interfaz equivocada
-		}
-
-		if err != nil {
-			logger.Errorln(err.Error())
-			return UpdateUserREsponse{}, err
+			return UpdateUserREsponse{}, errors.ErrUnsupported // aqui va el error personalizado de interfaz equivocada
 		}
 
 		user := entities.User{
@@ -158,7 +153,7 @@ func MakeUpdateUserEndpoint(s services.UserService, logger logrus.FieldLogger) e
 		serviceUser, err := s.UpdateUser(ctx, user)
 		if err != nil {
 			logger.Errorln("Layer: user_endpoint", "Method: MakeUpdateUserEndpoint", "Error:", err)
-			return UpdateUserREsponse{}, err
+			return UpdateUserREsponse{}, errors.New("Error: Using service in the endpoint")
 		}
 		logger.Infoln("Updated user with id:%s sucessfully ", serviceUser.ID)
 		return UpdateUserREsponse{User: serviceUser}, nil
@@ -171,15 +166,11 @@ func MakeSoftDeleteUserEndpoint(s services.UserService, logger logrus.FieldLogge
 		var ok bool = false
 
 		if req, ok = request.(SoftDeleteUserRequest); !ok {
-			return nil, errors.New("")
+			return SoftDeleteUserResponse{}, errors.ErrUnsupported
 		}
-
 		erro := s.SoftDeleteUser(ctx, req.ID)
-		if err != nil {
-			return DeleteUserResponse{}, err
-		}
 		logger.Infoln("Layer: user_endpoint ", "Method: MakeSoftDeleteUserEndpoint ", "Soft Delete user with id:%s sucessfully ", req.ID)
-		return DeleteUserResponse{}, erro
+		return SoftDeleteUserResponse{}, erro
 	}
 }
 
@@ -189,12 +180,9 @@ func MakeDeleteUserEndpoint(s services.UserService, logger logrus.FieldLogger) e
 		var ok bool = false
 
 		if req, ok = request.(DeleteUserRequest); !ok {
-			return nil, errors.New("ss")
+			return DeleteUserResponse{}, errors.ErrUnsupported
 		}
 		erro := s.DeleteUser(ctx, req.ID)
-		if err != nil {
-			return DeleteUserResponse{}, err
-		}
 		logger.Infoln("Layer: user_endpoint ", "Method: MakeDeleteUserEndpoint ", "Delete user with id:%s sucessfully ", req.ID)
 		return DeleteUserResponse{}, erro
 
