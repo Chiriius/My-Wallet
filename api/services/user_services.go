@@ -47,15 +47,15 @@ func (s *userService) CreateUser(ctx context.Context, user entities.User) (entit
 		s.logger.Errorln("Layer: user_services", "Method: CreateUser", "Error: minimum password length 8")
 		return entities.User{}, errors.New("minimum password length 8 ")
 
-
 	}
 	if len(phoneStr) != 10 {
-		s.logger.Errorln("Layer: user_services", "Method: CreateUser", "Error: Phone length 10")
-		return entities.User{}, errors.New("phone length 10")
+		s.logger.Errorln("Layer: user_services", "Method: CreateUser", "Error: Length of phone number 10")
+		return entities.User{}, errors.New("Length of phone number 10")
 
 	}
 	re := regexp.MustCompile(`^[a-zA-Z\s]+$`)
 	if !re.MatchString(user.Name) {
+		s.logger.Errorln("Layer: user_services", "Method: CreateUser", "Error: the name field must not contain special characters")
 		return entities.User{}, errors.New("the name field must not contain special characters")
 	}
 
@@ -80,12 +80,13 @@ func (s *userService) UpdateUser(ctx context.Context, user entities.User) (entit
 
 	}
 	if len(phoneStr) != 10 {
-		s.logger.Errorln("Layer: user_services", "Method: UpdateUser", "Error: Phone length 10")
-		return entities.User{}, errors.New("Phone length 10")
+		s.logger.Errorln("Layer: user_services", "Method: UpdateUser", "Error: Length of phone number 10")
+		return entities.User{}, errors.New("Length of phone number 10")
 
 	}
 	re := regexp.MustCompile(`^[a-zA-Z\s]+$`)
 	if !re.MatchString(user.Name) {
+		s.logger.Errorln("Layer: user_services", "Method: UpdateUser", "Error:the name field must not contain special characters")
 		return entities.User{}, errors.New("the name field must not contain special characters")
 	}
 
