@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"my_wallet/api/entities"
 	repository_user "my_wallet/api/respository/user"
+	"my_wallet/api/utils"
 	"regexp"
 
 	"github.com/go-playground/validator/v10"
@@ -59,6 +60,14 @@ func (s *userService) CreateUser(ctx context.Context, user entities.User) (entit
 		return entities.User{}, errors.New("the name field must not contain special characters")
 	}
 
+	passwordHashed, err := utils.HashPassword(user.Password)
+	if err != nil {
+		s.logger.Errorln("Layer: user_services", "Method: CreateUser", "Error: Error hashing the password")
+		return entities.User{}, errors.New("Error hashing the password")
+	}
+	user.Password = passwordHashed
+	s.logger.Info("Layer: user_services", "Method: CreateUser", "User:", user)
+
 	return s.repository.CreateUser(user, ctx)
 
 }
@@ -89,7 +98,12 @@ func (s *userService) UpdateUser(ctx context.Context, user entities.User) (entit
 		s.logger.Errorln("Layer: user_services", "Method: UpdateUser", "Error:the name field must not contain special characters")
 		return entities.User{}, errors.New("the name field must not contain special characters")
 	}
-
+	passwordHashed, err := utils.HashPassword(user.Password)
+	if err != nil {
+		s.logger.Errorln("Layer: user_services", "Method: CreateUser", "Error: Error hashing the password")
+		return entities.User{}, errors.New("Error hashing the password")
+	}
+	user.Password = passwordHashed
 	return s.repository.UpdateUser(user, ctx)
 }
 

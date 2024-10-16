@@ -120,12 +120,12 @@ func TestCreateUserService(t *testing.T) {
 			mockValidator: validator.New(),
 			mockLogger:    logrus.StandardLogger(),
 
-			mockError: errors.New("phone length 10"),
+			mockError: errors.New("Length of phone number 10"),
 			configureMock: func(m *userServiceMock, mockResponse entities.User, mockError error) {
 				m.On("CreateUser", mock.Anything, mock.AnythingOfType("entities.User")).Return(mockResponse, mockError)
 			},
 			expectedOutput: entities.User{},
-			expectedError:  errors.New("phone length 10"),
+			expectedError:  errors.New("Length of phone number 10"),
 		},
 	}
 
@@ -234,12 +234,12 @@ func TestUpdateUserService(t *testing.T) {
 			mockValidator: validator.New(),
 			mockLogger:    logrus.StandardLogger(),
 
-			mockError: errors.New("Phone length 10"),
+			mockError: errors.New("Length of phone number 10"),
 			configureMock: func(m *userServiceMock, mockResponse entities.User, mockError error) {
 				m.On("UpdateUser", mock.Anything, mock.AnythingOfType("entities.User")).Return(mockResponse, mockError)
 			},
 			expectedOutput: entities.User{},
-			expectedError:  errors.New("Phone length 10"),
+			expectedError:  errors.New("Length of phone number 10"),
 		},
 		{
 			testName: "TestSpecialCharactersName",
