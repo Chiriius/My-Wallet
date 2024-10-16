@@ -49,7 +49,7 @@ func (s *userService) CreateUser(ctx context.Context, user entities.User) (entit
 
 	}
 	if len(phoneStr) != 10 {
-		s.logger.Errorln("Layer: user_services", "Method: CreateUser", "Error: ength of phone number 10")
+		s.logger.Errorln("Layer: user_services", "Method: CreateUser", "Error: Length of phone number 10")
 		return entities.User{}, errors.New("Length of phone number 10")
 
 	}
