@@ -90,6 +90,25 @@ func (repo *MongoUserRepositoy) GetUserByEmail(email string, ctx context.Context
 	return user, nil
 }
 
+func (repo *MongoUserRepositoy) GetUserByEmail(email string, ctx context.Context) (entities.User, error) {
+	var user entities.User
+	filter := bson.D{{"email", email}}
+	opts := options.FindOne()
+	coll := repo.db.Database("mywallet").Collection("users")
+
+	err := coll.FindOne(ctx, filter, opts).Decode(&user)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return user, err
+		}
+		return user, err
+	}
+	if user.StateActive != true {
+		return entities.User{}, errors.New("User not found")
+	}
+	return user, nil
+}
+
 func (repo *MongoUserRepositoy) UpdateUser(userUpr entities.User, ctx context.Context) (entities.User, error) {
 	ide := string(userUpr.ID)
 	idd, err := primitive.ObjectIDFromHex(ide)
