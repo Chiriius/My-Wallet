@@ -29,7 +29,7 @@ func main() {
 		logrus.Info(e.Name())
 	}
 
-	envPath := "/home/miguel-angel-sena/Documents/golang/Mywallet/.env"
+	envPath := "C:/Users/miguel.gn/Documents/Practica/go/wallet/My-Wallet/.env"
 	//envPath := filepath.Join(dir, ".env")  //For container
 	logrus.Infof("find file.env in: %s", envPath)
 
@@ -38,11 +38,8 @@ func main() {
 	if err := viper.ReadInConfig(); err != nil {
 		logger.Panic("Error al leer el archivo de configuración:", err)
 	}
-
 	httpAddr := viper.GetString("SERVER_PORT_HTTP")
 	dburl := viper.GetString("DB_URL")
-	fmt.Println("ESTA ES LA DB", dburl, "PUERTO", httpAddr)
-
 	srv, err := server.New(logger, httpAddr, dburl, ctx)
 	if err != nil {
 		logger.Panic("Failed to create server:", err)

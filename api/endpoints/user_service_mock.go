@@ -47,3 +47,9 @@ func (s *serviceMock) DeleteUser(ctx context.Context, id string) error {
 	r := s.Called(ctx, id)
 	return r.Error(0)
 }
+
+func (s *serviceMock) Login(ctx context.Context, email string, password string) (bool, entities.User, error) {
+	r := s.Called(ctx, email, password)
+	return true, r.Get(0).(entities.User), r.Error(1)
+
+}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"my_wallet/api/endpoints"
+	"my_wallet/api/utils/jwt"
 	"net/http"
 
 	httpTransport "github.com/go-kit/kit/transport/http"
@@ -18,27 +19,38 @@ func NewHTTPHandler(endpoints endpoints.Endpoints, logger logrus.FieldLogger) ht
 		decodeCreateUserRequest,
 		encodeCreateUserResponse,
 	))
+	m.Handle("/user/login", httpTransport.NewServer(
+		endpoints.Login,
+		decodeLoginUserRequest,
+		encodeLoginUserResponse,
+	))
 	m.Handle("/user/{id}", httpTransport.NewServer(
 		endpoints.GetUser,
 		decodeGetUserRequest,
 		encodeGetUserResponse,
 	))
-	m.Handle("/user/delete/{id}", httpTransport.NewServer(
+	m.Handle("/user/delete/{id}", jwt.JWTMiddleware(httpTransport.NewServer(
 		endpoints.DeleteUser,
 		decodeDeleteUserRequest,
 		encodeDeleteUserResponse,
-	))
+	)))
 	m.Handle("/user/update/{id}", httpTransport.NewServer(
 		endpoints.UpdateUser,
 		decodeUpdateRequest,
 		encodeUpdateUserResponse,
 	))
-	m.Handle("/user/soft/{id}", httpTransport.NewServer(
+	m.Handle("/user/soft/{id}", jwt.JWTMiddleware(httpTransport.NewServer(
 		endpoints.SoftDeleteUser,
 		decodeSoftDeleteUserRequest,
 		encodeSoftDeleteUserResponse,
-	))
+	)))
 	return m
+}
+
+func encodeLoginUserResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {
+
+	w.WriteHeader(http.StatusAccepted)
+	return json.NewEncoder(w).Encode(response)
 }
 
 func encodeCreateUserResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {
@@ -74,6 +86,11 @@ func encodeSoftDeleteUserResponse(ctx context.Context, w http.ResponseWriter, re
 
 func decodeCreateUserRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	var req endpoints.CreateUserRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	return req, err
+}
+func decodeLoginUserRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	var req endpoints.LoginUserRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	return req, err
 }

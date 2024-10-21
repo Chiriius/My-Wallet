@@ -409,6 +409,7 @@ func TestMakeServerEndpoints(t *testing.T) {
 				DeleteUser:     MakeDeleteUserEndpoint(sm, logrus.StandardLogger()),
 				UpdateUser:     MakeUpdateUserEndpoint(sm, logrus.StandardLogger()),
 				SoftDeleteUser: MakeSoftDeleteUserEndpoint(sm, logrus.StandardLogger()),
+				Login:          MakeLoginEndpoint(sm, logrus.StandardLogger()),
 			},
 		},
 	}
@@ -427,6 +428,77 @@ func TestMakeServerEndpoints(t *testing.T) {
 			assert.NotNil(t, result.DeleteUser)
 			assert.NotNil(t, result.GetUser)
 			assert.NotNil(t, result.UpdateUser)
+			assert.NotNil(t, result.Login)
+		})
+	}
+}
+
+func TestMakeLoginUserEndpoint(t *testing.T) {
+
+	testScenarios := []struct {
+		testName        string
+		endpoint        func(services.UserService, logrus.FieldLogger) endpoint.Endpoint
+		service         services.UserService
+		mockContext     context.Context
+		mock            *serviceMock
+		mockError       error
+		mockLogger      logrus.FieldLogger
+		configureMock   func(*serviceMock, entities.User, error)
+		endpointRequest interface{}
+		mockResponse    entities.User
+		expectedOutput  LoginUserResponse
+		expectedError   error
+	}{
+		{
+			testName: "test MakeLoginEndpoint",
+			mock:     &serviceMock{},
+			mockResponse: entities.User{
+				ID:    "5",
+				Token: "33s",
+			},
+			configureMock: func(m *serviceMock, mockResponse entities.User, mockError error) {
+				m.On("Login", mock.Anything, mock.Anything, mock.Anything).Return(mockResponse, mockError)
+			},
+			expectedOutput: LoginUserResponse{
+				StateLogin: true,
+				Token:      "33s",
+			},
+			mockContext:     context.Background(),
+			mockLogger:      logrus.StandardLogger(),
+			expectedError:   nil,
+			endpointRequest: LoginUserRequest{Password: "12345678", Email: "alexer@gmail.com"},
+		},
+		{
+			testName:     "test MakeLoginEndpoint with error Interface type wrong",
+			mock:         &serviceMock{},
+			mockResponse: entities.User{},
+			configureMock: func(m *serviceMock, mockResponse entities.User, mockError error) {
+				m.On("Login", mock.Anything, mock.Anything, mock.Anything).Return(mockResponse, mockError)
+			},
+			expectedOutput:  LoginUserResponse{},
+			mockContext:     context.Background(),
+			mockLogger:      logrus.StandardLogger(),
+			expectedError:   errors.ErrUnsupported,
+			endpointRequest: SoftDeleteUserRequest{ID: "5"},
+		},
+	}
+
+	for _, tt := range testScenarios {
+		t.Run(tt.testName, func(t *testing.T) {
+
+			// Prepare
+			tt.endpoint = MakeLoginEndpoint
+			if tt.configureMock != nil {
+				tt.configureMock(tt.mock, tt.mockResponse, tt.mockError)
+			}
+			ctx := context.TODO()
+
+			// Act
+			result, err := tt.endpoint(tt.mock, tt.mockLogger)(ctx, tt.endpointRequest)
+
+			// Assert
+			assert.Equal(t, tt.expectedError, err)
+			assert.Equal(t, tt.expectedOutput, result)
 		})
 	}
 }
