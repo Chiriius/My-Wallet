@@ -17,4 +17,5 @@ func CheckPasswordHash(password, hash string) bool {
 		check = false
 	}
 	return check
+
 }
