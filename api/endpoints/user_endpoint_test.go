@@ -73,7 +73,7 @@ func TestMakeCreateUserEndpoint(t *testing.T) {
 			expectedOutput:  CreateUserResponse{},
 			mockContext:     context.Background(),
 			mockLogger:      logrus.StandardLogger(),
-			expectedError:   errors.New("Error: Using service in the endpoint"),
+			expectedError:   errors.New("minimum password length 8 "),
 			endpointRequest: CreateUserRequest{Password: "15678", Email: "alexer@gmail.com", Name: "Alexer Maestre"},
 		},
 	}
@@ -156,7 +156,7 @@ func TestMakeGetUserEndpoint(t *testing.T) {
 			expectedOutput:  GetUserResponse{},
 			mockContext:     context.Background(),
 			mockLogger:      logrus.StandardLogger(),
-			expectedError:   errors.New("Error: Using service in the endpoint"),
+			expectedError:   errors.New("id is 6 "),
 			endpointRequest: GetUserRequest{ID: "6"},
 		},
 	}
@@ -239,7 +239,7 @@ func TestMakeUpdateUserEndpoint(t *testing.T) {
 			expectedOutput:  UpdateUserREsponse{},
 			mockContext:     context.Background(),
 			mockLogger:      logrus.StandardLogger(),
-			expectedError:   errors.New("Error: Using service in the endpoint"),
+			expectedError:   errors.New("minimum password length 8 "),
 			endpointRequest: UpdateUserRequest{ID: "6", Password: "S23"},
 		},
 	}
