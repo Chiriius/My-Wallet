@@ -23,6 +23,7 @@ type LoginUserResponse struct {
 
 type CreateUserRequest struct {
 	DNI      int
+	TypeDNI  string
 	Name     string
 	Email    string
 	Password string
@@ -38,6 +39,7 @@ type CreateUserResponse struct {
 
 type UpdateUserRequest struct {
 	ID       string
+	TypeDNI  string
 	DNI      int
 	Name     string
 	Email    string
@@ -122,18 +124,19 @@ func MakeCreateUserEndpoint(s services.UserService, logger logrus.FieldLogger) e
 			return CreateUserResponse{}, errors.ErrUnsupported // aqui va el error personalizado de interfaz equivocada
 		}
 		user := entities.User{
-			DNI:         req.DNI,
-			Name:        req.Name,
-			Email:       req.Email,
-			Password:    req.Password,
-			Address:     req.Address,
-			Phone:       req.Phone,
-			StateActive: true,
+			DNI:      req.DNI,
+			TypeDNI:  req.TypeDNI,
+			Name:     req.Name,
+			Email:    req.Email,
+			Password: req.Password,
+			Address:  req.Address,
+			Phone:    req.Phone,
+			Enabled:  true,
 		}
 		serviceUser, err := s.CreateUser(ctx, user)
 		if err != nil {
 			logger.Errorln("Layer:user_endpoint", "Method:MakeCreateUserEndpoint", err)
-			return CreateUserResponse{}, errors.New("Error: Using service in the endpoint")
+			return CreateUserResponse{}, err
 		}
 		logger.Infoln("Layer:user_endpoint", "Method:MakeCreateUserEndpoint", "Response:", CreateUserResponse{ID: serviceUser.ID})
 		return CreateUserResponse{ID: serviceUser.ID, Token: serviceUser.Token}, nil
@@ -151,7 +154,7 @@ func MakeGetUserEndpoint(s services.UserService, logger logrus.FieldLogger) endp
 		}
 		user, err := s.GetUSer(ctx, req.ID)
 		if err != nil {
-			return GetUserResponse{}, errors.New("Error: Using service in the endpoint")
+			return GetUserResponse{}, err
 		}
 		return GetUserResponse{User: user}, nil
 	}
@@ -166,19 +169,20 @@ func MakeUpdateUserEndpoint(s services.UserService, logger logrus.FieldLogger) e
 			return UpdateUserREsponse{}, errors.ErrUnsupported // aqui va el error personalizado de interfaz equivocada
 		}
 		user := entities.User{
-			ID:          req.ID,
-			DNI:         req.DNI,
-			Email:       req.Email,
-			Name:        req.Name,
-			Password:    req.Password,
-			Address:     req.Address,
-			Phone:       req.Phone,
-			StateActive: true,
+			ID:       req.ID,
+			TypeDNI:  req.TypeDNI,
+			DNI:      req.DNI,
+			Email:    req.Email,
+			Name:     req.Name,
+			Password: req.Password,
+			Address:  req.Address,
+			Phone:    req.Phone,
+			Enabled:  true,
 		}
 		serviceUser, err := s.UpdateUser(ctx, user)
 		if err != nil {
 			logger.Errorln("Layer: user_endpoint", "Method: MakeUpdateUserEndpoint", "Error:", err)
-			return UpdateUserREsponse{}, errors.New("Error: Using service in the endpoint")
+			return UpdateUserREsponse{}, err
 		}
 		logger.Infoln("Updated user with id:%s sucessfully ", serviceUser.ID)
 		return UpdateUserREsponse{User: serviceUser}, nil

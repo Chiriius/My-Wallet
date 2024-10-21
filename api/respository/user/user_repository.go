@@ -65,8 +65,8 @@ func (repo *MongoUserRepositoy) GetUser(id string, ctx context.Context) (entitie
 		}
 		return user, err
 	}
-	if user.StateActive != true {
-		return entities.User{}, errors.New("User not found")
+	if user.Enabled != true {
+		return entities.User{}, errors.New("Disabled user")
 	}
 	return user, nil
 }
@@ -84,7 +84,7 @@ func (repo *MongoUserRepositoy) GetUserByEmail(email string, ctx context.Context
 		}
 		return user, err
 	}
-	if user.StateActive != true {
+	if user.Enabled != true {
 		return entities.User{}, errors.New("User not found")
 	}
 	return user, nil
@@ -102,12 +102,13 @@ func (repo *MongoUserRepositoy) UpdateUser(userUpr entities.User, ctx context.Co
 	coll := repo.db.Database("mywallet").Collection("users")
 	userUpdate := bson.M{
 		"$set": bson.M{
-			"name":        userUpr.Name,
-			"email":       userUpr.Email,
-			"password":    userUpr.Password,
-			"address":     userUpr.Address,
-			"phone":       userUpr.Phone,
-			"stateActive": userUpr.StateActive,
+			"typedni":  userUpr.TypeDNI,
+			"name":     userUpr.Name,
+			"email":    userUpr.Email,
+			"password": userUpr.Password,
+			"address":  userUpr.Address,
+			"phone":    userUpr.Phone,
+			"enabled":  userUpr.Enabled,
 		},
 	}
 
@@ -146,7 +147,7 @@ func (repo *MongoUserRepositoy) SoftDeleteUser(id string, ctx context.Context) e
 	coll := repo.db.Database("mywallet").Collection("users")
 	userUpdate := bson.M{
 		"$set": bson.M{
-			"stateActive": false,
+			"enabled": false,
 		},
 	}
 
