@@ -10,6 +10,17 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+type LoginUserRequest struct {
+	Email    string
+	Password string
+}
+
+type LoginUserResponse struct {
+	StateLogin bool   `json:"Match,omitempty"`
+	Token      string `json:"token,omitempty"`
+	Err        string `json:"error,omitempty"`
+}
+
 type CreateUserRequest struct {
 	DNI      int
 	Name     string
@@ -20,8 +31,9 @@ type CreateUserRequest struct {
 }
 
 type CreateUserResponse struct {
-	ID  string `json:"id,omitempty"`
-	Err string `json:"error,omitempty"`
+	ID    string `json:"id,omitempty"`
+	Token string `json:"token,omitempty"`
+	Err   string `json:"error,omitempty"`
 }
 
 type UpdateUserRequest struct {
@@ -69,6 +81,7 @@ type Endpoints struct {
 	DeleteUser     endpoint.Endpoint
 	UpdateUser     endpoint.Endpoint
 	SoftDeleteUser endpoint.Endpoint
+	Login          endpoint.Endpoint
 }
 
 func MakeServerEndpoints(s services.UserService, logger logrus.FieldLogger) Endpoints {
@@ -78,6 +91,25 @@ func MakeServerEndpoints(s services.UserService, logger logrus.FieldLogger) Endp
 		DeleteUser:     MakeDeleteUserEndpoint(s, logger),
 		UpdateUser:     MakeUpdateUserEndpoint(s, logger),
 		SoftDeleteUser: MakeSoftDeleteUserEndpoint(s, logger),
+		Login:          MakeLoginEndpoint(s, logger),
+	}
+}
+
+func MakeLoginEndpoint(s services.UserService, logger logrus.FieldLogger) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		var req LoginUserRequest
+		var ok bool = false
+
+		if req, ok = request.(LoginUserRequest); !ok {
+			return LoginUserResponse{}, errors.ErrUnsupported // aqui va el error personalizado de interfaz equivocada
+		}
+		logger.Infoln(req.Email, " ", req.Password)
+		state, user, err := s.Login(ctx, req.Email, req.Password)
+
+		if err != nil {
+			return LoginUserResponse{}, errors.New("Invalid email or password")
+		}
+		return LoginUserResponse{StateLogin: state, Token: user.Token}, nil
 	}
 }
 
@@ -104,7 +136,7 @@ func MakeCreateUserEndpoint(s services.UserService, logger logrus.FieldLogger) e
 			return CreateUserResponse{}, errors.New("Error: Using service in the endpoint")
 		}
 		logger.Infoln("Layer:user_endpoint", "Method:MakeCreateUserEndpoint", "Response:", CreateUserResponse{ID: serviceUser.ID})
-		return CreateUserResponse{ID: serviceUser.ID}, nil
+		return CreateUserResponse{ID: serviceUser.ID, Token: serviceUser.Token}, nil
 
 	}
 }
@@ -117,17 +149,12 @@ func MakeGetUserEndpoint(s services.UserService, logger logrus.FieldLogger) endp
 		if req, ok = request.(GetUserRequest); !ok {
 			return GetUserResponse{}, errors.ErrUnsupported // aqui va el error personalizado de interfaz equivocada
 		}
-
 		user, err := s.GetUSer(ctx, req.ID)
-
 		if err != nil {
 			return GetUserResponse{}, errors.New("Error: Using service in the endpoint")
 		}
-
 		return GetUserResponse{User: user}, nil
-
 	}
-
 }
 
 func MakeUpdateUserEndpoint(s services.UserService, logger logrus.FieldLogger) endpoint.Endpoint {
@@ -138,7 +165,6 @@ func MakeUpdateUserEndpoint(s services.UserService, logger logrus.FieldLogger) e
 		if req, ok = request.(UpdateUserRequest); !ok {
 			return UpdateUserREsponse{}, errors.ErrUnsupported // aqui va el error personalizado de interfaz equivocada
 		}
-
 		user := entities.User{
 			ID:          req.ID,
 			DNI:         req.DNI,
@@ -149,7 +175,6 @@ func MakeUpdateUserEndpoint(s services.UserService, logger logrus.FieldLogger) e
 			Phone:       req.Phone,
 			StateActive: true,
 		}
-
 		serviceUser, err := s.UpdateUser(ctx, user)
 		if err != nil {
 			logger.Errorln("Layer: user_endpoint", "Method: MakeUpdateUserEndpoint", "Error:", err)

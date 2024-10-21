@@ -7,7 +7,10 @@ import (
 	"my_wallet/api/entities"
 	repository_user "my_wallet/api/respository/user"
 	"my_wallet/api/utils"
+	"my_wallet/api/utils/jwt"
+
 	"regexp"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/sirupsen/logrus"
@@ -19,6 +22,7 @@ type UserService interface {
 	DeleteUser(ctx context.Context, id string) error
 	SoftDeleteUser(ctx context.Context, id string) error
 	UpdateUser(ctx context.Context, user entities.User) (entities.User, error)
+	Login(ctx context.Context, email string, password string) (bool, entities.User, error)
 }
 
 type userService struct {
@@ -68,6 +72,12 @@ func (s *userService) CreateUser(ctx context.Context, user entities.User) (entit
 	user.Password = passwordHashed
 	s.logger.Info("Layer: user_services", "Method: CreateUser", "User:", user)
 
+
+	user.Created_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+	user.Update_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+	token, refreshToken, _ := jwt.GenerateToken(user.Email)
+	user.Token = token
+	user.RefreshToken = refreshToken
 	return s.repository.CreateUser(user, ctx)
 
 }
@@ -114,4 +124,32 @@ func (s *userService) SoftDeleteUser(ctx context.Context, id string) error {
 func (s *userService) DeleteUser(ctx context.Context, id string) error {
 
 	return s.repository.DeleteUser(id, ctx)
+}
+
+func (s *userService) Login(ctx context.Context, email string, password string) (bool, entities.User, error) {
+	user, err := s.repository.GetUserByEmail(email, ctx)
+	s.logger.Infoln(user)
+	loginState := true
+	if err != nil {
+		return false, entities.User{}, errors.New("Not found user")
+	}
+
+	if utils.CheckPasswordHash(password, user.Password) != true {
+
+		s.logger.Errorln("Layer: user_services", "Method: Login", "Error: Error checking the password")
+
+		return false, entities.User{}, errors.New("Invalid email or password")
+
+	}
+
+	token, refreshToken, _ := jwt.GenerateToken(user.Email)
+	user.Token = token
+	user.RefreshToken = refreshToken
+
+	userr, _ := s.repository.UpdateUserToken(user, ctx)
+
+	user.Created_at = userr.Created_at
+	user.Update_at = userr.Update_at
+
+	return loginState, user, nil
 }

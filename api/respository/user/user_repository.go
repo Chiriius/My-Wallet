@@ -15,9 +15,11 @@ import (
 type UserRepository interface {
 	CreateUser(user entities.User, ctx context.Context) (entities.User, error)
 	GetUser(id string, ctx context.Context) (entities.User, error)
+	GetUserByEmail(email string, ctx context.Context) (entities.User, error)
 	DeleteUser(id string, ctx context.Context) error
 	UpdateUser(userUpr entities.User, ctx context.Context) (entities.User, error)
 	SoftDeleteUser(id string, ctx context.Context) error
+	UpdateUserToken(userUpr entities.User, ctx context.Context) (entities.User, error)
 }
 
 type MongoUserRepositoy struct {
@@ -69,6 +71,25 @@ func (repo *MongoUserRepositoy) GetUser(id string, ctx context.Context) (entitie
 	return user, nil
 }
 
+func (repo *MongoUserRepositoy) GetUserByEmail(email string, ctx context.Context) (entities.User, error) {
+	var user entities.User
+	filter := bson.D{{"email", email}}
+	opts := options.FindOne()
+	coll := repo.db.Database("mywallet").Collection("users")
+
+	err := coll.FindOne(ctx, filter, opts).Decode(&user)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return user, err
+		}
+		return user, err
+	}
+	if user.StateActive != true {
+		return entities.User{}, errors.New("User not found")
+	}
+	return user, nil
+}
+
 func (repo *MongoUserRepositoy) UpdateUser(userUpr entities.User, ctx context.Context) (entities.User, error) {
 	ide := string(userUpr.ID)
 	idd, err := primitive.ObjectIDFromHex(ide)
@@ -94,7 +115,24 @@ func (repo *MongoUserRepositoy) UpdateUser(userUpr entities.User, ctx context.Co
 	if err != nil {
 		return entities.User{}, err
 	}
-	repo.logger.Infoln("Layer:user_repository ", "Method:UpdateUSer ", "User:", userUpr)
+	repo.logger.Infoln("Layer:user_repository ", "Method:UpdateUser ", "User:", userUpr)
+	return userUpr, nil
+}
+func (repo *MongoUserRepositoy) UpdateUserToken(userUpr entities.User, ctx context.Context) (entities.User, error) {
+	filter := bson.D{{"dni", userUpr.DNI}}
+	coll := repo.db.Database("mywallet").Collection("users")
+	userUpdate := bson.M{
+		"$set": bson.M{
+			"token":      userUpr.Token,
+			"updated_at": userUpr.Update_at,
+		},
+	}
+
+	_, err := coll.UpdateOne(ctx, filter, userUpdate)
+	if err != nil {
+		return entities.User{}, err
+	}
+	repo.logger.Infoln("Layer:user_repository ", "Method:UpdateUserToken ", "User:", userUpr)
 	return userUpr, nil
 }
 
