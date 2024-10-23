@@ -123,7 +123,6 @@ func TestCreateUserService(t *testing.T) {
 			mockContext:   context.Background(),
 			mockValidator: validator.New(),
 			mockLogger:    logrus.StandardLogger(),
-
 			mockError: ErrLenghPhone,
 			configureMock: func(m *userServiceMock, mockResponse entities.User, mockError error) {
 				m.On("CreateUser", mock.Anything, mock.AnythingOfType("entities.User")).Return(mockResponse, mockError)
@@ -265,7 +264,6 @@ func TestUpdateUserService(t *testing.T) {
 			mockContext:   context.Background(),
 			mockValidator: validator.New(),
 			mockLogger:    logrus.StandardLogger(),
-
 			mockError: ErrLenghPhone,
 			configureMock: func(m *userServiceMock, mockResponse entities.User, mockError error) {
 				m.On("UpdateUser", mock.Anything, mock.AnythingOfType("entities.User")).Return(mockResponse, mockError)

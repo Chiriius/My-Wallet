@@ -14,7 +14,7 @@ func GenerateToken(email string) (string, string, error) {
 	viper.SetConfigFile(envPath)
 	key := viper.GetString("SECRET_KEY")
 	secretKey := []byte(key)
-
+  
 	expirationTimeStr := viper.GetString("TIME_TOKEN")
 	expirationTimeDuration, err := strconv.Atoi(expirationTimeStr)
 	if err != nil {
@@ -49,6 +49,7 @@ func GenerateToken(email string) (string, string, error) {
 func ValidateToken(tokenStr string) (*jwt.StandardClaims, error) {
 	envPath := "C:/Users/miguel.gn/Documents/Practica/go/wallet/My-Wallet/.env"
 	viper.SetConfigFile(envPath)
+  
 	key := viper.GetString("SECRET_KEY")
 	secretKey := []byte(key)
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
@@ -57,6 +58,7 @@ func ValidateToken(tokenStr string) (*jwt.StandardClaims, error) {
 		}
 		return secretKey, nil
 	})
+
 	if err != nil || !token.Valid {
 		return nil, err
 	}

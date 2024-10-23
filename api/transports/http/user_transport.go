@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"my_wallet/api/endpoints"
+
 	repository_user "my_wallet/api/respository/user"
 	"my_wallet/api/services"
 	"my_wallet/api/utils/jwt"
@@ -32,6 +33,11 @@ func NewHTTPHandler(endpoints endpoints.Endpoints, logger logrus.FieldLogger) ht
 		decodeLoginUserRequest,
 		encodeLoginUserResponse,
 		httpTransport.ServerErrorEncoder(CustomErrorEncoder),
+	))
+	m.Handle("/user/login", httpTransport.NewServer(
+		endpoints.Login,
+		decodeLoginUserRequest,
+		encodeLoginUserResponse,
 	))
 	m.Handle("/user/{id}", httpTransport.NewServer(
 		endpoints.GetUser,
@@ -154,6 +160,11 @@ func decodeCreateUserRequest(_ context.Context, r *http.Request) (interface{}, e
 		return nil, err
 	}
 	return req, nil
+}
+func decodeLoginUserRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	var req endpoints.LoginUserRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	return req, err
 }
 func decodeLoginUserRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	var req endpoints.LoginUserRequest

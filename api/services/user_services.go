@@ -7,6 +7,7 @@ import (
 	repository_user "my_wallet/api/respository/user"
 	"my_wallet/api/utils"
 	"my_wallet/api/utils/jwt"
+
 	"regexp"
 	"time"
 
@@ -79,7 +80,11 @@ func (s *userService) CreateUser(ctx context.Context, user entities.User) (entit
 	token, refreshToken, _ := jwt.GenerateToken(user.Email)
 	user.Token = token
 	user.RefreshToken = refreshToken
-
+	user.Created_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+	user.Update_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+	token, refreshToken, _ := jwt.GenerateToken(user.Email)
+	user.Token = token
+	user.RefreshToken = refreshToken
 	return s.repository.CreateUser(user, ctx)
 
 }
@@ -116,7 +121,6 @@ func (s *userService) UpdateUser(ctx context.Context, user entities.User) (entit
 	}
 	passwordHashed, err := utils.HashPassword(user.Password)
 	if err != nil {
-
 		s.logger.Errorln("Layer: user_services", "Method: UpdateUser", "Error:", ErrHashingPassword)
 		return entities.User{}, ErrHashingPassword
 	}
@@ -142,11 +146,8 @@ func (s *userService) Login(ctx context.Context, email string, password string) 
 	}
 
 	if utils.CheckPasswordHash(password, user.Password) != true {
-
 		s.logger.Errorln("Layer: user_services", "Method: Login", "Error:", ErrInvalidCredentials)
-
 		return false, entities.User{}, ErrInvalidCredentials
-
 	}
 
 	token, refreshToken, _ := jwt.GenerateToken(user.Email)
