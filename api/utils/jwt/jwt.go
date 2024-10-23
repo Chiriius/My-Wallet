@@ -2,7 +2,7 @@ package jwt
 
 import (
 	"errors"
-	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -15,8 +15,15 @@ func GenerateToken(email string) (string, string, error) {
 	key := viper.GetString("SECRET_KEY")
 	secretKey := []byte(key)
 
-	expirationTime := time.Now().Add(30 * time.Minute)
-	refreshExpirationTime := time.Now().Add(24 * time.Hour)
+	expirationTimeStr := viper.GetString("TIME_TOKEN")
+	expirationTimeDuration, err := strconv.Atoi(expirationTimeStr)
+	if err != nil {
+		expirationTimeDuration = 30
+	}
+
+	refreshExpirationTimeDuration := 24 * time.Hour
+	expirationTime := time.Now().Add(time.Duration(expirationTimeDuration) * time.Minute)
+	refreshExpirationTime := time.Now().Add(refreshExpirationTimeDuration)
 
 	claims := &jwt.StandardClaims{
 		ExpiresAt: expirationTime.Unix(),
@@ -32,7 +39,6 @@ func GenerateToken(email string) (string, string, error) {
 	if err != nil {
 		return "", "", err
 	}
-	fmt.Println("ssss", secretKey)
 	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims).SignedString(secretKey)
 	if err != nil {
 		return "", "", err

@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"my_wallet/api/entities"
 	repository_user "my_wallet/api/respository/user"
@@ -48,29 +47,29 @@ func (s *userService) CreateUser(ctx context.Context, user entities.User) (entit
 	}
 	phoneStr := fmt.Sprintf("%d", user.Phone)
 	if len(user.Password) < 8 {
-		s.logger.Errorln("Layer: user_services", "Method: CreateUser", "Error: minimum password length 8")
-		return entities.User{}, errors.New("minimum password length 8 ")
+		s.logger.Errorln("Layer: user_services", "Method: CreateUser", "Error:", ErrLenghtPassword)
+		return entities.User{}, ErrLenghtPassword
 
 	}
 	if len(phoneStr) != 10 {
-		s.logger.Errorln("Layer: user_services", "Method: CreateUser", "Error: Length of phone number 10")
-		return entities.User{}, errors.New("Length of phone number 10")
+		s.logger.Errorln("Layer: user_services", "Method: CreateUser", "Error:", ErrLenghPhone)
+		return entities.User{}, ErrLenghPhone
 
 	}
 	re := regexp.MustCompile(`^[a-zA-Z\s]+$`)
 	if !re.MatchString(user.Name) {
-		s.logger.Errorln("Layer: user_services", "Method: CreateUser", "Error: the name field must not contain special characters")
-		return entities.User{}, errors.New("the name field must not contain special characters")
+		s.logger.Errorln("Layer: user_services", "Method: CreateUser", "Error:", ErrNameSpecialCharacters)
+		return entities.User{}, ErrNameSpecialCharacters
 	}
 	if user.TypeDNI != "CC" && user.TypeDNI != "NIT" {
-		s.logger.Errorln("Layer: user_services", "Method: UpdateUser", "Error: Length of phone number 10")
-		return entities.User{}, errors.New("ID type must be CC or NIT")
+		s.logger.Errorln("Layer: user_services", "Method: UpdateUser", "Error:", ErrTypeDNI)
+		return entities.User{}, ErrTypeDNI
 	}
 
 	passwordHashed, err := utils.HashPassword(user.Password)
 	if err != nil {
-		s.logger.Errorln("Layer: user_services", "Method: CreateUser", "Error: Error hashing the password")
-		return entities.User{}, errors.New("Error hashing the password")
+		s.logger.Errorln("Layer: user_services", "Method: CreateUser", "Error:", ErrHashingPassword)
+		return entities.User{}, ErrHashingPassword
 	}
 	user.Password = passwordHashed
 	s.logger.Info("Layer: user_services", "Method: CreateUser", "User:", user)
@@ -97,28 +96,29 @@ func (s *userService) UpdateUser(ctx context.Context, user entities.User) (entit
 	}
 	phoneStr := fmt.Sprintf("%d", user.Phone)
 	if len(user.Password) < 8 {
-		s.logger.Errorln("Layer: user_services", "Method: UpdateUser", "Error: minimum password length 8")
-		return entities.User{}, errors.New("Minimum password length 8 ")
+		s.logger.Errorln("Layer: user_services", "Method: UpdateUser", "Error:", ErrLenghtPassword)
+		return entities.User{}, ErrLenghtPassword
 
 	}
 	if len(phoneStr) != 10 {
-		s.logger.Errorln("Layer: user_services", "Method: UpdateUser", "Error: Length of phone number 10")
-		return entities.User{}, errors.New("Length of phone number 10")
+		s.logger.Errorln("Layer: user_services", "Method: UpdateUser", "Error:", ErrLenghPhone)
+		return entities.User{}, ErrLenghPhone
 
 	}
 	if user.TypeDNI != "CC" && user.TypeDNI != "NIT" {
-		s.logger.Errorln("Layer: user_services", "Method: UpdateUser", "Error: Length of phone number 10")
-		return entities.User{}, errors.New("ID type must be CC or NIT")
+		s.logger.Errorln("Layer: user_services", "Method: UpdateUser", "Error:", ErrTypeDNI)
+		return entities.User{}, ErrTypeDNI
 	}
 	re := regexp.MustCompile(`^[a-zA-Z\s]+$`)
 	if !re.MatchString(user.Name) {
-		s.logger.Errorln("Layer: user_services", "Method: UpdateUser", "Error:the name field must not contain special characters")
-		return entities.User{}, errors.New("the name field must not contain special characters")
+		s.logger.Errorln("Layer: user_services", "Method: UpdateUser", "Error:", ErrNameSpecialCharacters)
+		return entities.User{}, ErrNameSpecialCharacters
 	}
 	passwordHashed, err := utils.HashPassword(user.Password)
 	if err != nil {
-		s.logger.Errorln("Layer: user_services", "Method: UpdateUser", "Error: Error hashing the password")
-		return entities.User{}, errors.New("Error hashing the password")
+
+		s.logger.Errorln("Layer: user_services", "Method: UpdateUser", "Error:", ErrHashingPassword)
+		return entities.User{}, ErrHashingPassword
 	}
 	user.Password = passwordHashed
 	return s.repository.UpdateUser(user, ctx)
@@ -138,14 +138,14 @@ func (s *userService) Login(ctx context.Context, email string, password string) 
 	s.logger.Infoln(user)
 	loginState := true
 	if err != nil {
-		return false, entities.User{}, errors.New("Not found user")
+		return false, entities.User{}, ErrUserNotfound
 	}
 
 	if utils.CheckPasswordHash(password, user.Password) != true {
 
-		s.logger.Errorln("Layer: user_services", "Method: Login", "Error: Error checking the password")
+		s.logger.Errorln("Layer: user_services", "Method: Login", "Error:", ErrInvalidCredentials)
 
-		return false, entities.User{}, errors.New("Invalid email or password")
+		return false, entities.User{}, ErrInvalidCredentials
 
 	}
 
