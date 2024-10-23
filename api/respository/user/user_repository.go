@@ -2,7 +2,6 @@ package repository_user
 
 import (
 	"context"
-	"errors"
 	"my_wallet/api/entities"
 
 	"github.com/sirupsen/logrus"
@@ -51,7 +50,7 @@ func (repo *MongoUserRepositoy) GetUser(id string, ctx context.Context) (entitie
 	var user entities.User
 	idd, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return user, err
+		return user, ErrUserNotfound
 	}
 
 	filter := bson.D{{"_id", idd}}
@@ -61,12 +60,12 @@ func (repo *MongoUserRepositoy) GetUser(id string, ctx context.Context) (entitie
 	err = coll.FindOne(ctx, filter, opts).Decode(&user)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return user, err
+			return user, ErrUserNotfound
 		}
 		return user, err
 	}
 	if user.Enabled != true {
-		return entities.User{}, errors.New("Disabled user")
+		return entities.User{}, ErrDisbledUser
 	}
 	return user, nil
 }
@@ -80,31 +79,12 @@ func (repo *MongoUserRepositoy) GetUserByEmail(email string, ctx context.Context
 	err := coll.FindOne(ctx, filter, opts).Decode(&user)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return user, err
+			return user, ErrUserNotfound
 		}
 		return user, err
 	}
 	if user.Enabled != true {
-		return entities.User{}, errors.New("User not found")
-	}
-	return user, nil
-}
-
-func (repo *MongoUserRepositoy) GetUserByEmail(email string, ctx context.Context) (entities.User, error) {
-	var user entities.User
-	filter := bson.D{{"email", email}}
-	opts := options.FindOne()
-	coll := repo.db.Database("mywallet").Collection("users")
-
-	err := coll.FindOne(ctx, filter, opts).Decode(&user)
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			return user, err
-		}
-		return user, err
-	}
-	if user.StateActive != true {
-		return entities.User{}, errors.New("User not found")
+		return entities.User{}, ErrDisbledUser
 	}
 	return user, nil
 }
@@ -196,7 +176,7 @@ func (repo *MongoUserRepositoy) DeleteUser(id string, ctx context.Context) error
 
 	if res.DeletedCount == 0 {
 		repo.logger.Errorln("Layer:user_repository ", "Method: DeleteUser ", "Error: No tasks were deleted")
-		return errors.New("No tasks were deleted")
+		return ErrNotasks
 	}
 	repo.logger.Infoln("Layer:user_repository ", "Method: DeleteUser ", "User:", idd)
 	return nil

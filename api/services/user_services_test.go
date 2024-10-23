@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"errors"
 
 	"my_wallet/api/entities"
 	repository_user "my_wallet/api/respository/user"
@@ -32,6 +31,7 @@ func TestCreateUserService(t *testing.T) {
 			mock:     &userServiceMock{},
 			mockResponse: entities.User{
 				DNI:      34,
+				TypeDNI:  "CC",
 				Name:     "Alexer",
 				Email:    "alexer@gmail.com",
 				Password: "12345678",
@@ -49,6 +49,7 @@ func TestCreateUserService(t *testing.T) {
 			},
 			expectedOutput: entities.User{
 				DNI:      34,
+				TypeDNI:  "CC",
 				Name:     "Alexer",
 				Email:    "alexer@gmail.com",
 				Password: "12345678",
@@ -63,6 +64,7 @@ func TestCreateUserService(t *testing.T) {
 			mock:     &userServiceMock{},
 			mockResponse: entities.User{
 				DNI:      34,
+				TypeDNI:  "CC",
 				Name:     "Alexer@@",
 				Email:    "alexer@gmail.com",
 				Password: "12345678",
@@ -74,41 +76,43 @@ func TestCreateUserService(t *testing.T) {
 			mockValidator: validator.New(),
 			mockLogger:    logrus.StandardLogger(),
 
-			mockError: errors.New("the name field must not contain special characters"),
+			mockError: ErrNameSpecialCharacters,
 			configureMock: func(m *userServiceMock, mockResponse entities.User, mockError error) {
 				m.On("CreateUser", mock.Anything, mock.AnythingOfType("entities.User")).Return(mockResponse, mockError)
 			},
 			expectedOutput: entities.User{},
-			expectedError:  errors.New("the name field must not contain special characters"),
+			expectedError:  ErrNameSpecialCharacters,
 		},
 		{
 			testName: "testLenghtPassword",
 			mock:     &userServiceMock{},
 			mockResponse: entities.User{
 				DNI:      34,
+				TypeDNI:  "CC",
 				Name:     "Alexer",
 				Email:    "alexer@gmail.com",
 				Password: "123456",
 				Address:  "cra 22a",
-				Phone:    1234567,
+				Phone:    1234567898,
 				Enabled:  true,
 			},
 			mockContext:   context.Background(),
 			mockValidator: validator.New(),
 			mockLogger:    logrus.StandardLogger(),
 
-			mockError: errors.New("minimum password length 8 "),
+			mockError: ErrLenghtPassword,
 			configureMock: func(m *userServiceMock, mockResponse entities.User, mockError error) {
 				m.On("CreateUser", mock.Anything, mock.AnythingOfType("entities.User")).Return(mockResponse, mockError)
 			},
 			expectedOutput: entities.User{},
-			expectedError:  errors.New("minimum password length 8 "),
+			expectedError:  ErrLenghtPassword,
 		},
 		{
 			testName: "testLenghtPhone",
 			mock:     &userServiceMock{},
 			mockResponse: entities.User{
 				DNI:      34,
+				TypeDNI:  "CC",
 				Name:     "Alexer",
 				Email:    "alexer@gmail.com",
 				Password: "123456232323",
@@ -119,13 +123,36 @@ func TestCreateUserService(t *testing.T) {
 			mockContext:   context.Background(),
 			mockValidator: validator.New(),
 			mockLogger:    logrus.StandardLogger(),
-
-			mockError: errors.New("Length of phone number 10"),
+			mockError: ErrLenghPhone,
 			configureMock: func(m *userServiceMock, mockResponse entities.User, mockError error) {
 				m.On("CreateUser", mock.Anything, mock.AnythingOfType("entities.User")).Return(mockResponse, mockError)
 			},
 			expectedOutput: entities.User{},
-			expectedError:  errors.New("Length of phone number 10"),
+			expectedError:  ErrLenghPhone,
+		},
+		{
+			testName: "testTypeDNIWrong",
+			mock:     &userServiceMock{},
+			mockResponse: entities.User{
+				DNI:      34,
+				TypeDNI:  "tsd",
+				Name:     "Alexer",
+				Email:    "alexer@gmail.com",
+				Password: "123456232323",
+				Address:  "cra 22a",
+				Phone:    1234567898,
+				Enabled:  true,
+			},
+			mockContext:   context.Background(),
+			mockValidator: validator.New(),
+			mockLogger:    logrus.StandardLogger(),
+
+			mockError: ErrTypeDNI,
+			configureMock: func(m *userServiceMock, mockResponse entities.User, mockError error) {
+				m.On("CreateUser", mock.Anything, mock.AnythingOfType("entities.User")).Return(mockResponse, mockError)
+			},
+			expectedOutput: entities.User{},
+			expectedError:  ErrTypeDNI,
 		},
 	}
 
@@ -169,6 +196,7 @@ func TestUpdateUserService(t *testing.T) {
 			mock:     &userServiceMock{},
 			mockResponse: entities.User{
 				DNI:      34,
+				TypeDNI:  "CC",
 				Name:     "Alexer",
 				Email:    "alexer@gmail.com",
 				Password: "12345678",
@@ -186,6 +214,7 @@ func TestUpdateUserService(t *testing.T) {
 			},
 			expectedOutput: entities.User{
 				DNI:      34,
+				TypeDNI:  "CC",
 				Name:     "Alexer",
 				Email:    "alexer@gmail.com",
 				Password: "12345678",
@@ -200,6 +229,7 @@ func TestUpdateUserService(t *testing.T) {
 			mock:     &userServiceMock{},
 			mockResponse: entities.User{
 				DNI:      34,
+				TypeDNI:  "CC",
 				Name:     "Alexer",
 				Email:    "alexer@gmail.com",
 				Password: "12345",
@@ -211,18 +241,19 @@ func TestUpdateUserService(t *testing.T) {
 			mockValidator: validator.New(),
 			mockLogger:    logrus.StandardLogger(),
 
-			mockError: errors.New("Minimum password length 8 "),
+			mockError: ErrLenghtPassword,
 			configureMock: func(m *userServiceMock, mockResponse entities.User, mockError error) {
 				m.On("UpdateUser", mock.Anything, mock.AnythingOfType("entities.User")).Return(mockResponse, mockError)
 			},
 			expectedOutput: entities.User{},
-			expectedError:  errors.New("Minimum password length 8 "),
+			expectedError:  ErrLenghtPassword,
 		},
 		{
 			testName: "TestLenghtPhone",
 			mock:     &userServiceMock{},
 			mockResponse: entities.User{
 				DNI:      34,
+				TypeDNI:  "CC",
 				Name:     "Alexer",
 				Email:    "alexer@gmail.com",
 				Password: "12345678",
@@ -233,19 +264,19 @@ func TestUpdateUserService(t *testing.T) {
 			mockContext:   context.Background(),
 			mockValidator: validator.New(),
 			mockLogger:    logrus.StandardLogger(),
-
-			mockError: errors.New("Length of phone number 10"),
+			mockError: ErrLenghPhone,
 			configureMock: func(m *userServiceMock, mockResponse entities.User, mockError error) {
 				m.On("UpdateUser", mock.Anything, mock.AnythingOfType("entities.User")).Return(mockResponse, mockError)
 			},
 			expectedOutput: entities.User{},
-			expectedError:  errors.New("Length of phone number 10"),
+			expectedError:  ErrLenghPhone,
 		},
 		{
 			testName: "TestSpecialCharactersName",
 			mock:     &userServiceMock{},
 			mockResponse: entities.User{
 				DNI:      34,
+				TypeDNI:  "CC",
 				Name:     "Alexer@@",
 				Email:    "alexer@gmail.com",
 				Password: "12345678",
@@ -257,12 +288,36 @@ func TestUpdateUserService(t *testing.T) {
 			mockValidator: validator.New(),
 			mockLogger:    logrus.StandardLogger(),
 
-			mockError: errors.New("the name field must not contain special characters"),
+			mockError: ErrNameSpecialCharacters,
 			configureMock: func(m *userServiceMock, mockResponse entities.User, mockError error) {
 				m.On("UpdateUser", mock.Anything, mock.AnythingOfType("entities.User")).Return(mockResponse, mockError)
 			},
 			expectedOutput: entities.User{},
-			expectedError:  errors.New("the name field must not contain special characters"),
+			expectedError:  ErrNameSpecialCharacters,
+		},
+		{
+			testName: "TestTypeDNIWrong",
+			mock:     &userServiceMock{},
+			mockResponse: entities.User{
+				DNI:      34,
+				TypeDNI:  "SDW",
+				Name:     "Alexer",
+				Email:    "alexer@gmail.com",
+				Password: "12345678",
+				Address:  "cra 22a",
+				Phone:    1234567899,
+				Enabled:  true,
+			},
+			mockContext:   context.Background(),
+			mockValidator: validator.New(),
+			mockLogger:    logrus.StandardLogger(),
+
+			mockError: ErrTypeDNI,
+			configureMock: func(m *userServiceMock, mockResponse entities.User, mockError error) {
+				m.On("UpdateUser", mock.Anything, mock.AnythingOfType("entities.User")).Return(mockResponse, mockError)
+			},
+			expectedOutput: entities.User{},
+			expectedError:  ErrTypeDNI,
 		},
 	}
 
@@ -395,6 +450,7 @@ func TestGetUserService(t *testing.T) {
 	}
 
 }
+
 func TestSoftDeleteUserService(t *testing.T) {
 	testScenarios := []struct {
 		testName       string

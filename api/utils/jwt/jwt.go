@@ -2,7 +2,7 @@ package jwt
 
 import (
 	"errors"
-	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -13,11 +13,17 @@ func GenerateToken(email string) (string, string, error) {
 	envPath := "C:/Users/miguel.gn/Documents/Practica/go/wallet/My-Wallet/.env"
 	viper.SetConfigFile(envPath)
 	key := viper.GetString("SECRET_KEY")
-
 	secretKey := []byte(key)
+  
+	expirationTimeStr := viper.GetString("TIME_TOKEN")
+	expirationTimeDuration, err := strconv.Atoi(expirationTimeStr)
+	if err != nil {
+		expirationTimeDuration = 30
+	}
 
-	expirationTime := time.Now().Add(30 * time.Minute)
-	refreshExpirationTime := time.Now().Add(24 * time.Hour)
+	refreshExpirationTimeDuration := 24 * time.Hour
+	expirationTime := time.Now().Add(time.Duration(expirationTimeDuration) * time.Minute)
+	refreshExpirationTime := time.Now().Add(refreshExpirationTimeDuration)
 
 	claims := &jwt.StandardClaims{
 		ExpiresAt: expirationTime.Unix(),
@@ -33,7 +39,6 @@ func GenerateToken(email string) (string, string, error) {
 	if err != nil {
 		return "", "", err
 	}
-	fmt.Println("ssss", secretKey)
 	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims).SignedString(secretKey)
 	if err != nil {
 		return "", "", err
@@ -44,7 +49,7 @@ func GenerateToken(email string) (string, string, error) {
 func ValidateToken(tokenStr string) (*jwt.StandardClaims, error) {
 	envPath := "C:/Users/miguel.gn/Documents/Practica/go/wallet/My-Wallet/.env"
 	viper.SetConfigFile(envPath)
-
+  
 	key := viper.GetString("SECRET_KEY")
 	secretKey := []byte(key)
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {

@@ -14,7 +14,7 @@ type serviceMock struct {
 
 func (s *serviceMock) CreateUser(ctx context.Context, user entities.User) (entities.User, error) {
 	if len(user.Password) < 8 {
-		return entities.User{}, errors.New("minimum password length 8 ")
+		return entities.User{}, ErrInvalidCredentials
 	}
 	r := s.Called(ctx, user)
 	return r.Get(0).(entities.User), r.Error(1)
@@ -32,7 +32,7 @@ func (s *serviceMock) GetUSer(ctx context.Context, id string) (entities.User, er
 
 func (s *serviceMock) UpdateUser(ctx context.Context, user entities.User) (entities.User, error) {
 	if len(user.Password) < 8 {
-		return entities.User{}, errors.New("minimum password length 8 ")
+		return entities.User{}, ErrInvalidCredentials
 	}
 	r := s.Called(ctx, user)
 	return r.Get(0).(entities.User), r.Error(1)

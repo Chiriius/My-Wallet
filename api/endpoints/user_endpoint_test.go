@@ -58,7 +58,7 @@ func TestMakeCreateUserEndpoint(t *testing.T) {
 			expectedOutput:  CreateUserResponse{},
 			mockContext:     context.Background(),
 			mockLogger:      logrus.StandardLogger(),
-			expectedError:   errors.ErrUnsupported,
+			expectedError:   ErrInterfaceWrong,
 			endpointRequest: CreateUserResponse{},
 		},
 		{
@@ -73,7 +73,7 @@ func TestMakeCreateUserEndpoint(t *testing.T) {
 			expectedOutput:  CreateUserResponse{},
 			mockContext:     context.Background(),
 			mockLogger:      logrus.StandardLogger(),
-			expectedError:   errors.New("minimum password length 8 "),
+			expectedError:   ErrInvalidCredentials,
 			endpointRequest: CreateUserRequest{Password: "15678", Email: "alexer@gmail.com", Name: "Alexer Maestre"},
 		},
 	}
@@ -141,7 +141,7 @@ func TestMakeGetUserEndpoint(t *testing.T) {
 			expectedOutput:  GetUserResponse{},
 			mockContext:     context.Background(),
 			mockLogger:      logrus.StandardLogger(),
-			expectedError:   errors.ErrUnsupported,
+			expectedError:   ErrInterfaceWrong,
 			endpointRequest: GetUserResponse{},
 		},
 		{
@@ -224,7 +224,7 @@ func TestMakeUpdateUserEndpoint(t *testing.T) {
 			expectedOutput:  UpdateUserREsponse{},
 			mockContext:     context.Background(),
 			mockLogger:      logrus.StandardLogger(),
-			expectedError:   errors.ErrUnsupported,
+			expectedError:   ErrInterfaceWrong,
 			endpointRequest: UpdateUserREsponse{},
 		},
 		{
@@ -239,7 +239,7 @@ func TestMakeUpdateUserEndpoint(t *testing.T) {
 			expectedOutput:  UpdateUserREsponse{},
 			mockContext:     context.Background(),
 			mockLogger:      logrus.StandardLogger(),
-			expectedError:   errors.New("minimum password length 8 "),
+			expectedError:   ErrInvalidCredentials,
 			endpointRequest: UpdateUserRequest{ID: "6", Password: "S23"},
 		},
 	}
@@ -303,7 +303,7 @@ func TestMakeSoftDeleteUserEndpoint(t *testing.T) {
 			expectedOutput:  SoftDeleteUserResponse{},
 			mockContext:     context.Background(),
 			mockLogger:      logrus.StandardLogger(),
-			expectedError:   errors.ErrUnsupported,
+			expectedError:   ErrInterfaceWrong,
 			endpointRequest: GetUserRequest{ID: "5"},
 		},
 	}
@@ -367,7 +367,7 @@ func TestMakeDeleteUserEndpoint(t *testing.T) {
 			expectedOutput:  DeleteUserResponse{},
 			mockContext:     context.Background(),
 			mockLogger:      logrus.StandardLogger(),
-			expectedError:   errors.ErrUnsupported,
+			expectedError:   ErrInterfaceWrong,
 			endpointRequest: SoftDeleteUserRequest{ID: "5"},
 		},
 	}
@@ -478,7 +478,7 @@ func TestMakeLoginUserEndpoint(t *testing.T) {
 			expectedOutput:  LoginUserResponse{},
 			mockContext:     context.Background(),
 			mockLogger:      logrus.StandardLogger(),
-			expectedError:   errors.ErrUnsupported,
+			expectedError:   ErrInterfaceWrong,
 			endpointRequest: SoftDeleteUserRequest{ID: "5"},
 		},
 	}
