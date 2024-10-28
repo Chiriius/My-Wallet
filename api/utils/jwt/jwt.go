@@ -24,6 +24,7 @@ func GenerateToken(email string) (string, string, error) {
 	//Logger
 	if err != nil {
 		expirationTimeDuration = defaultExpirationTimeToken
+
 	}
 
 	refreshExpirationTimeDuration := 24 * time.Hour
