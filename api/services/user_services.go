@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+  
 	"my_wallet/api/entities"
 	repository_user "my_wallet/api/respository/user"
 	"my_wallet/api/utils"
@@ -61,11 +62,31 @@ func (s *userService) CreateUser(ctx context.Context, user entities.User) (entit
 	if !re.MatchString(user.Name) {
 		s.logger.Errorln("Layer: user_services", "Method: CreateUser", "Error:", ErrNameSpecialCharacters)
 		return entities.User{}, ErrNameSpecialCharacters
+
+	}
+	if user.TypeDNI != "CC" && user.TypeDNI != "NIT" {
+		s.logger.Errorln("Layer: user_services", "Method: UpdateUser", "Error:", ErrTypeDNI)
+		return entities.User{}, ErrTypeDNI
+
 	}
 	if user.TypeDNI != "CC" && user.TypeDNI != "NIT" {
 		s.logger.Errorln("Layer: user_services", "Method: UpdateUser", "Error:", ErrTypeDNI)
 		return entities.User{}, ErrTypeDNI
 	}
+
+	passwordHashed, err := utils.HashPassword(user.Password)
+	if err != nil {
+		s.logger.Errorln("Layer: user_services", "Method: CreateUser", "Error:", ErrHashingPassword)
+		return entities.User{}, ErrHashingPassword
+	}
+	user.Password = passwordHashed
+	s.logger.Info("Layer: user_services", "Method: CreateUser", "User:", user)
+
+	user.Created_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+	user.Update_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+	token, refreshToken, _ := jwt.GenerateToken(user.Email)
+	user.Token = token
+	user.RefreshToken = refreshToken
 
 	passwordHashed, err := utils.HashPassword(user.Password)
 	if err != nil {
