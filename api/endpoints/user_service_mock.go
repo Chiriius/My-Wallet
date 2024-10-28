@@ -53,3 +53,6 @@ func (s *serviceMock) Login(ctx context.Context, email string, password string) 
 	return true, r.Get(0).(entities.User), r.Error(1)
 
 }
+func (s *serviceMock) GetHealtcheck(ctx context.Context) (bool, error) {
+	return true, nil
+}

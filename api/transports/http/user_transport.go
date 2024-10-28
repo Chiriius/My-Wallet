@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"my_wallet/api/endpoints"
+	infraestructure_repository "my_wallet/api/respository/healtcheck"
 	repository_user "my_wallet/api/respository/user"
 	"my_wallet/api/services"
 	"my_wallet/api/utils/jwt"
@@ -57,6 +58,12 @@ func NewHTTPHandler(endpoints endpoints.Endpoints, logger logrus.FieldLogger) ht
 		encodeSoftDeleteUserResponse,
 		httpTransport.ServerErrorEncoder(CustomErrorEncoder),
 	)))
+	m.Handle("/healthcheck", httpTransport.NewServer(
+		endpoints.HealthCheck,
+		decodeHealtcheckDbRequest,
+		encodeHealtcheckDbResponse,
+		httpTransport.ServerErrorEncoder(CustomErrorEncoder),
+	))
 	return m
 }
 
@@ -101,6 +108,9 @@ func CustomErrorEncoder(ctx context.Context, err error, w http.ResponseWriter) {
 	case errors.Is(err, endpoints.ErrInterfaceWrong):
 		statusCode = http.StatusBadRequest
 		errorMessage = endpoints.ErrInterfaceWrong.Error()
+	case errors.Is(err, infraestructure_repository.ErrLoadingDatabase):
+		statusCode = http.StatusInternalServerError
+		errorMessage = infraestructure_repository.ErrLoadingDatabase.Error()
 
 	default:
 		statusCode = http.StatusInternalServerError
@@ -196,4 +206,14 @@ func decodeUpdateRequest(_ context.Context, r *http.Request) (interface{}, error
 		req.ID = r.PathValue("id")
 	}
 	return req, err
+}
+
+func encodeHealtcheckDbResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {
+	w.WriteHeader(http.StatusOK)
+	return json.NewEncoder(w).Encode(response)
+}
+
+func decodeHealtcheckDbRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	var req = endpoints.HealtcheckDbRequest{}
+	return req, nil
 }

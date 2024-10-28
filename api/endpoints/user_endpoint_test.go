@@ -420,7 +420,7 @@ func TestMakeServerEndpoints(t *testing.T) {
 		t.Run(tt.testName, func(t *testing.T) {
 
 			// Act
-			result := MakeServerEndpoints(tt.mock, logrus.StandardLogger())
+			result := MakeServerEndpoints(tt.mock, tt.mock, logrus.StandardLogger())
 
 			// Assert
 			assert.NotNil(t, result.CreateUser)

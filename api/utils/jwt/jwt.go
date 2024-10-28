@@ -9,6 +9,9 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Documentar valor por defecto
+const defaultExpirationTimeToken = 30
+
 func GenerateToken(email string) (string, string, error) {
 	envPath := "C:/Users/miguel.gn/Documents/Practica/go/wallet/My-Wallet/.env"
 	viper.SetConfigFile(envPath)
@@ -17,8 +20,10 @@ func GenerateToken(email string) (string, string, error) {
 
 	expirationTimeStr := viper.GetString("TIME_TOKEN")
 	expirationTimeDuration, err := strconv.Atoi(expirationTimeStr)
+
+	//Logger
 	if err != nil {
-		expirationTimeDuration = 30
+		expirationTimeDuration = defaultExpirationTimeToken
 	}
 
 	refreshExpirationTimeDuration := 24 * time.Hour

@@ -4,6 +4,7 @@ import (
 	"context"
 	"my_wallet/api/entities"
 	"my_wallet/api/services"
+	infraestructure_services "my_wallet/api/services/healtcheck"
 
 	"github.com/go-kit/kit/endpoint"
 	"github.com/sirupsen/logrus"
@@ -83,9 +84,10 @@ type Endpoints struct {
 	UpdateUser     endpoint.Endpoint
 	SoftDeleteUser endpoint.Endpoint
 	Login          endpoint.Endpoint
+	HealthCheck    endpoint.Endpoint
 }
 
-func MakeServerEndpoints(s services.UserService, logger logrus.FieldLogger) Endpoints {
+func MakeServerEndpoints(s services.UserService, h infraestructure_services.HealtcheckService, logger logrus.FieldLogger) Endpoints {
 	return Endpoints{
 		CreateUser:     MakeCreateUserEndpoint(s, logger),
 		GetUser:        MakeGetUserEndpoint(s, logger),
@@ -93,6 +95,7 @@ func MakeServerEndpoints(s services.UserService, logger logrus.FieldLogger) Endp
 		UpdateUser:     MakeUpdateUserEndpoint(s, logger),
 		SoftDeleteUser: MakeSoftDeleteUserEndpoint(s, logger),
 		Login:          MakeLoginEndpoint(s, logger),
+		HealthCheck:    MakeGetHealthCheckEndpoint(h, logger),
 	}
 }
 

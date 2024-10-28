@@ -3,8 +3,10 @@ package server
 import (
 	"context"
 	"my_wallet/api/endpoints"
+	infraestructure_repository "my_wallet/api/respository/healtcheck"
 	repository_user "my_wallet/api/respository/user"
 	"my_wallet/api/services"
+	infraestructure_services "my_wallet/api/services/healtcheck"
 	transports "my_wallet/api/transports/http"
 	"net/http"
 	"os"
@@ -24,9 +26,11 @@ type Server struct {
 func New(logger logrus.FieldLogger, httpAddr, dburl string, ctx context.Context) (*Server, error) {
 	db := GetMongoDB(ctx, dburl)
 
+	healtCheckRepository := infraestructure_repository.NewMongoUserREpository(db, logger)
+	healtCheckService := infraestructure_services.NewHealtcheckService(ctx, healtCheckRepository, logger)
 	userRepository := repository_user.NewMongoUserREpository(db, logger)
 	userService := services.NewUserService(userRepository, logger, ctx)
-	userEnpoints := endpoints.MakeServerEndpoints(userService, logger)
+	userEnpoints := endpoints.MakeServerEndpoints(userService, healtCheckService, logger)
 	httpHandler := transports.NewHTTPHandler(userEnpoints, logger)
 
 	httpMux := http.NewServeMux()
