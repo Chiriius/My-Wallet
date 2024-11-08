@@ -146,6 +146,29 @@ func TestCreateUserService(t *testing.T) {
 			mockContext:   context.Background(),
 			mockValidator: validator.New(),
 			mockLogger:    logrus.StandardLogger(),
+			mockError: ErrLenghPhone,
+			configureMock: func(m *userServiceMock, mockResponse entities.User, mockError error) {
+				m.On("CreateUser", mock.Anything, mock.AnythingOfType("entities.User")).Return(mockResponse, mockError)
+			},
+			expectedOutput: entities.User{},
+			expectedError:  ErrLenghPhone,
+		},
+		{
+			testName: "testTypeDNIWrong",
+			mock:     &userServiceMock{},
+			mockResponse: entities.User{
+				DNI:      34,
+				TypeDNI:  "tsd",
+				Name:     "Alexer",
+				Email:    "alexer@gmail.com",
+				Password: "123456232323",
+				Address:  "cra 22a",
+				Phone:    1234567898,
+				Enabled:  true,
+			},
+			mockContext:   context.Background(),
+			mockValidator: validator.New(),
+			mockLogger:    logrus.StandardLogger(),
 
 			mockError: ErrTypeDNI,
 			configureMock: func(m *userServiceMock, mockResponse entities.User, mockError error) {
@@ -534,6 +557,71 @@ func TestNewUserService(t *testing.T) {
 			// Assert
 			assert.NotNil(t, result)
 			assert.Equal(t, tt.expectedOutput.repository, result.repository)
+		})
+	}
+}
+
+func TestLoginUserService(t *testing.T) {
+	// Inicializar el logger
+	logger := logrus.New()
+
+	// Escenarios de prueba
+	testScenarios := []struct {
+		testName       string
+		mock           *userServiceMock
+		mockResponse   entities.User
+		mockContext    context.Context
+		mockLogger     logrus.FieldLogger
+		mockError      error
+		configureMock  func(*userServiceMock, entities.User, error)
+		expectedOutput bool
+		expectedUser   entities.User
+		expectedError  error
+	}{
+
+		{
+			testName: "TestLoginSuccessful",
+			mock:     &userServiceMock{},
+			mockResponse: entities.User{
+				Email:    "testuser@gmail.com",
+				Password: "hashed_password_123",
+			},
+			mockContext: context.Background(),
+			mockError:   nil,
+			configureMock: func(m *userServiceMock, mockResponse entities.User, mockError error) {
+				m.On("GetUserByEmail", mock.Anything, mock.AnythingOfType("string")).Return(mockResponse, mockError)
+			},
+			expectedOutput: false,
+			expectedUser: entities.User{
+				Email:        "",
+				Token:        "",
+				RefreshToken: "",
+			},
+			expectedError: ErrInvalidCredentials,
+		},
+	}
+
+	for _, tt := range testScenarios {
+		t.Run(tt.testName, func(t *testing.T) {
+			// Configuración del mock
+			if tt.configureMock != nil {
+				tt.configureMock(tt.mock, tt.mockResponse, tt.mockError)
+			}
+
+			// Crear la instancia del servicio con dependencias
+			service := &userService{
+				repository: tt.mock, // Asegúrate de que esto no sea nil
+				ctx:        tt.mockContext,
+				logger:     logger, // Logger debe ser válido
+			}
+
+			// Llamar al método Login
+			result, user, err := service.Login(tt.mockContext, tt.mockResponse.Email, "password_test")
+
+			// Verificar las expectativas
+			assert.Equal(t, tt.expectedOutput, result)
+			assert.Equal(t, tt.expectedUser, user)
+			assert.Equal(t, tt.expectedError, err)
 		})
 	}
 }

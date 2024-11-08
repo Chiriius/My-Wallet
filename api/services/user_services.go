@@ -67,12 +67,21 @@ func (s *userService) CreateUser(ctx context.Context, user entities.User) (entit
 	if user.TypeDNI != "CC" && user.TypeDNI != "NIT" {
 		s.logger.Errorln("Layer: user_services", "Method: UpdateUser", "Error:", ErrTypeDNI)
 		return entities.User{}, ErrTypeDNI
+	}
 
+	passwordHashed, err := utils.HashPassword(user.Password)
+	if err != nil {
+		s.logger.Errorln("Layer: user_services", "Method: CreateUser", "Error:", ErrHashingPassword)
+		return entities.User{}, ErrHashingPassword
 	}
-	if user.TypeDNI != "CC" && user.TypeDNI != "NIT" {
-		s.logger.Errorln("Layer: user_services", "Method: UpdateUser", "Error:", ErrTypeDNI)
-		return entities.User{}, ErrTypeDNI
-	}
+	user.Password = passwordHashed
+	s.logger.Info("Layer: user_services", "Method: CreateUser", "User:", user)
+
+	user.Created_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+	user.Update_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+	token, refreshToken, _ := jwt.GenerateToken(user.Email, s.logger)
+	user.Token = token
+	user.RefreshToken = refreshToken
 
 	passwordHashed, err := utils.HashPassword(user.Password)
 	if err != nil {
@@ -159,19 +168,19 @@ func (s *userService) DeleteUser(ctx context.Context, id string) error {
 }
 
 func (s *userService) Login(ctx context.Context, email string, password string) (bool, entities.User, error) {
-	user, err := s.repository.GetUserByEmail(email, ctx)
+	user, _ := s.repository.GetUserByEmail(email, ctx)
 	s.logger.Infoln(user)
 	loginState := true
-	if err != nil {
-		return false, entities.User{}, ErrUserNotfound
-	}
 
 	if utils.CheckPasswordHash(password, user.Password) != true {
+
 		s.logger.Errorln("Layer: user_services", "Method: Login", "Error:", ErrInvalidCredentials)
+
 		return false, entities.User{}, ErrInvalidCredentials
+
 	}
 
-	token, refreshToken, _ := jwt.GenerateToken(user.Email)
+	token, refreshToken, _ := jwt.GenerateToken(user.Email, s.logger)
 	user.Token = token
 	user.RefreshToken = refreshToken
 
