@@ -76,7 +76,7 @@ func (s *userService) CreateUser(ctx context.Context, user entities.User) (entit
 
 	user.Created_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 	user.Update_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
-	token, refreshToken, _ := jwt.GenerateToken(user.Email)
+	token, refreshToken, _ := jwt.GenerateToken(user.Email, s.logger)
 	user.Token = token
 	user.RefreshToken = refreshToken
 
@@ -134,12 +134,9 @@ func (s *userService) DeleteUser(ctx context.Context, id string) error {
 }
 
 func (s *userService) Login(ctx context.Context, email string, password string) (bool, entities.User, error) {
-	user, err := s.repository.GetUserByEmail(email, ctx)
+	user, _ := s.repository.GetUserByEmail(email, ctx)
 	s.logger.Infoln(user)
 	loginState := true
-	if err != nil {
-		return false, entities.User{}, ErrUserNotfound
-	}
 
 	if utils.CheckPasswordHash(password, user.Password) != true {
 
@@ -149,7 +146,7 @@ func (s *userService) Login(ctx context.Context, email string, password string) 
 
 	}
 
-	token, refreshToken, _ := jwt.GenerateToken(user.Email)
+	token, refreshToken, _ := jwt.GenerateToken(user.Email, s.logger)
 	user.Token = token
 	user.RefreshToken = refreshToken
 

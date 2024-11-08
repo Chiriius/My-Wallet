@@ -133,10 +133,6 @@ func encodeCreateUserResponse(ctx context.Context, w http.ResponseWriter, respon
 	return json.NewEncoder(w).Encode(response)
 }
 func encodeGetUserResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {
-	if response == nil {
-		w.WriteHeader(http.StatusNotFound)
-		return nil
-	}
 	w.WriteHeader(http.StatusOK)
 	return json.NewEncoder(w).Encode(response)
 }

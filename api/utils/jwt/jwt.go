@@ -6,13 +6,14 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
 // Documentar valor por defecto
 const defaultExpirationTimeToken = 30
 
-func GenerateToken(email string) (string, string, error) {
+func GenerateToken(email string, logger logrus.FieldLogger) (string, string, error) {
 	envPath := "C:/Users/miguel.gn/Documents/Practica/go/wallet/My-Wallet/.env"
 	viper.SetConfigFile(envPath)
 	key := viper.GetString("SECRET_KEY")
@@ -21,8 +22,8 @@ func GenerateToken(email string) (string, string, error) {
 	expirationTimeStr := viper.GetString("TIME_TOKEN")
 	expirationTimeDuration, err := strconv.Atoi(expirationTimeStr)
 
-	//Logger
 	if err != nil {
+		logger.Errorln("Layer: Jwt", "Method: GenerateToken", "Error:", err)
 		expirationTimeDuration = defaultExpirationTimeToken
 	}
 
