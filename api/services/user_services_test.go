@@ -123,7 +123,29 @@ func TestCreateUserService(t *testing.T) {
 			mockContext:   context.Background(),
 			mockValidator: validator.New(),
 			mockLogger:    logrus.StandardLogger(),
-
+			mockError: ErrLenghPhone,
+			configureMock: func(m *userServiceMock, mockResponse entities.User, mockError error) {
+				m.On("CreateUser", mock.Anything, mock.AnythingOfType("entities.User")).Return(mockResponse, mockError)
+			},
+			expectedOutput: entities.User{},
+			expectedError:  ErrLenghPhone,
+		},
+		{
+			testName: "testTypeDNIWrong",
+			mock:     &userServiceMock{},
+			mockResponse: entities.User{
+				DNI:      34,
+				TypeDNI:  "tsd",
+				Name:     "Alexer",
+				Email:    "alexer@gmail.com",
+				Password: "123456232323",
+				Address:  "cra 22a",
+				Phone:    1234567898,
+				Enabled:  true,
+			},
+			mockContext:   context.Background(),
+			mockValidator: validator.New(),
+			mockLogger:    logrus.StandardLogger(),
 			mockError: ErrLenghPhone,
 			configureMock: func(m *userServiceMock, mockResponse entities.User, mockError error) {
 				m.On("CreateUser", mock.Anything, mock.AnythingOfType("entities.User")).Return(mockResponse, mockError)
@@ -265,7 +287,6 @@ func TestUpdateUserService(t *testing.T) {
 			mockContext:   context.Background(),
 			mockValidator: validator.New(),
 			mockLogger:    logrus.StandardLogger(),
-
 			mockError: ErrLenghPhone,
 			configureMock: func(m *userServiceMock, mockResponse entities.User, mockError error) {
 				m.On("UpdateUser", mock.Anything, mock.AnythingOfType("entities.User")).Return(mockResponse, mockError)

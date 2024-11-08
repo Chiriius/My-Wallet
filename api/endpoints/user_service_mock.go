@@ -56,3 +56,4 @@ func (s *serviceMock) Login(ctx context.Context, email string, password string) 
 func (s *serviceMock) GetHealtcheck(ctx context.Context) (bool, error) {
 	return true, nil
 }
+
