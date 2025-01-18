@@ -43,7 +43,8 @@ func (s *userService) CreateUser(ctx context.Context, user entities.User) (entit
 
 	if err := s.validate.Struct(user); err != nil {
 		s.logger.Errorln("Layer: user_services", "Method: CreateUser", "Error:", err)
-		return entities.User{}, err
+		fmt.Println("error:", err)
+		return entities.User{}, ErrValidation
 	}
 	phoneStr := fmt.Sprintf("%d", user.Phone)
 	if len(user.Password) < 8 {

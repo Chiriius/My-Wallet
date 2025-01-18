@@ -25,7 +25,7 @@ func NewMongoUserREpository(db *mongo.Client, logger logrus.FieldLogger) *MongoU
 }
 
 func (repo *MongoUserRepositoy) GetHealtcheck(ctx context.Context) (bool, error) {
-	repoCtx, c := context.WithTimeout(ctx, 20*time.Second)
+	repoCtx, c := context.WithTimeout(ctx, 10*time.Second)
 	err := repo.db.Ping(repoCtx, nil)
 	if err != nil {
 		repo.logger.Errorln("Layer: infraestructure_repository ", "Method:GetHealtcheck ", "Error:", c)

@@ -2,7 +2,9 @@ package server
 
 import (
 	"context"
+	_ "my_wallet/api/cmd/docs"
 	"my_wallet/api/endpoints"
+
 	infraestructure_repository "my_wallet/api/respository/healtcheck"
 	repository_user "my_wallet/api/respository/user"
 	"my_wallet/api/services"
@@ -12,6 +14,7 @@ import (
 	"os"
 
 	"github.com/sirupsen/logrus"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -35,6 +38,10 @@ func New(logger logrus.FieldLogger, httpAddr, dburl string, ctx context.Context)
 
 	httpMux := http.NewServeMux()
 	httpMux.Handle("/", httpHandler)
+	httpMux.Handle("/swagger/", httpSwagger.WrapHandler)
+	httpMux.HandleFunc("/swagger/doc.json", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "/app/api/cmd/docs/swagger.json")
+	})
 
 	return &Server{
 		dbMongo:  db,

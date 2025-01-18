@@ -2,14 +2,19 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"my_wallet/api/server"
 	"os"
+	"path/filepath"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
+// @title My Wallet API
+// @version 1.0
+// @description This is a sample server for a wallet API.
+// @host localhost:8081
+// @BasePath /
 func main() {
 	ctx := context.Background()
 	logger := logrus.StandardLogger()
@@ -17,9 +22,9 @@ func main() {
 
 	dir, err := os.Getwd()
 	if err != nil {
-		logrus.Panic("Error finding the work directory:", err)
+		logrus.Panic("Layer: main ", "Error: finding the work directory:", err)
 	}
-	fmt.Println("Work directory actually:", dir)
+	logger.Infoln("Layer: main ", "Message: Work directory actually:", dir)
 	entries, err := os.ReadDir("./")
 	if err != nil {
 		logrus.Fatal(err)
@@ -28,21 +33,19 @@ func main() {
 	for _, e := range entries {
 		logrus.Info(e.Name())
 	}
-
-	envPath := "C:/Users/miguel.gn/Documents/Practica/go/wallet/My-Wallet/.env"
-	//envPath := filepath.Join(dir, ".env")  //For container
-	logrus.Infof("find file.env in: %s", envPath)
-
+	//rootDir := filepath.Join(dir, "../..")
+	envPath := filepath.Join(dir, ".env") //For container replace rootDir for dir and for local use rootDir
+	logrus.Infoln("Layer: main ", "Message: find file.env in: %s", envPath)
 	viper.SetConfigFile(envPath)
 
 	if err := viper.ReadInConfig(); err != nil {
-		logger.Panic("Error al leer el archivo de configuración:", err)
+		logger.Panic("Layer: main ", "Error al leer el archivo de configuración:", err)
 	}
 	httpAddr := viper.GetString("SERVER_PORT_HTTP")
 	dburl := viper.GetString("DB_URL")
 	srv, err := server.New(logger, httpAddr, dburl, ctx)
 	if err != nil {
-		logger.Panic("Failed to create server:", err)
+		logger.Panic("Layer: main ", "Failed to create server:", err)
 	}
 
 	srv.Start()

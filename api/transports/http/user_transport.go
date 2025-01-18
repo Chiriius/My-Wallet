@@ -22,6 +22,7 @@ type ErrorResponse struct {
 func NewHTTPHandler(endpoints endpoints.Endpoints, logger logrus.FieldLogger) http.Handler {
 
 	m := http.NewServeMux()
+
 	m.Handle("/user", httpTransport.NewServer(
 		endpoints.CreateUser,
 		decodeCreateUserRequest,
@@ -84,6 +85,9 @@ func CustomErrorEncoder(ctx context.Context, err error, w http.ResponseWriter) {
 	case errors.Is(err, services.ErrTypeDNI):
 		statusCode = http.StatusBadRequest
 		errorMessage = services.ErrTypeDNI.Error()
+	case errors.Is(err, services.ErrValidation):
+		statusCode = http.StatusBadRequest
+		errorMessage = services.ErrValidation.Error()
 	case errors.Is(err, services.ErrUserNotfound):
 		statusCode = http.StatusNotFound
 		errorMessage = services.ErrUserNotfound.Error()

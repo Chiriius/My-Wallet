@@ -2,6 +2,8 @@ package jwt
 
 import (
 	"errors"
+	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -14,7 +16,9 @@ import (
 const defaultExpirationTimeToken = 30
 
 func GenerateToken(email string, logger logrus.FieldLogger) (string, string, error) {
-	envPath := "C:/Users/miguel.gn/Documents/Practica/go/wallet/My-Wallet/.env"
+	dir, err := os.Getwd()
+	//rootDir := filepath.Join(dir, "../..")
+	envPath := filepath.Join(dir, ".env") //For container replace rootDir for dir and for local use rootDIr
 	viper.SetConfigFile(envPath)
 	key := viper.GetString("SECRET_KEY")
 	secretKey := []byte(key)
@@ -53,7 +57,9 @@ func GenerateToken(email string, logger logrus.FieldLogger) (string, string, err
 	return token, refreshToken, nil
 }
 func ValidateToken(tokenStr string) (*jwt.StandardClaims, error) {
-	envPath := "C:/Users/miguel.gn/Documents/Practica/go/wallet/My-Wallet/.env"
+	dir, err := os.Getwd()
+	//rootDir := filepath.Join(dir, "../..")
+	envPath := filepath.Join(dir, ".env") //For container replace rootDir for dir and for local use rootDIr
 	viper.SetConfigFile(envPath)
 	key := viper.GetString("SECRET_KEY")
 	secretKey := []byte(key)

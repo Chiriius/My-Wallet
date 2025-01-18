@@ -1,4 +1,4 @@
-
+version: '3.8'
 services:
   mywalletapi:
     image: mywalletusers:1.0
@@ -7,13 +7,14 @@ services:
       context: .
       dockerfile: ./Dockerfile
     ports:
-      - 8080:8080
+      - 8081:8081
     networks:
       - mywallet
+    restart: unless-stopped 
 
   dbmywallet:
     image: mongo:noble
-    container_name: mywalletdb
+    container_name: mywalletdbmongousers
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: 12345678
